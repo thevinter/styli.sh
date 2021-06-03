@@ -10,7 +10,6 @@ reddit(){
     sub=${subreddits[$b]}
     sort=$2
     top_time=$3
-
     if [ -z $sort   ]; then
         sort="hot"
     fi
@@ -18,8 +17,11 @@ reddit(){
     if [ -z $top_time   ]; then
         top_time=""
     fi
-    subreddit="$(echo -e "${sub}" | tr -d '[:space:]')"
-    url="https://www.reddit.com/r/$subreddit/$sort/.json?raw_json=1&t=$top_time"
+    sub="$(echo -e "${sub}" | tr -d '[:space:]')"
+    if [ ! -z $1 ]; then
+        sub=$1
+    fi
+    url="https://www.reddit.com/r/$sub/$sort/.json?raw_json=1&t=$top_time"
     content=`wget -T $timeout -U "$useragent" -q -O - $url`
     urls=$(echo -n "$content"| jq -r '.data.children[]|select(.data.post_hint|test("image")?) | .data.preview.images[0].source.url')
     names=$(echo -n "$content"| jq -r '.data.children[]|select(.data.post_hint|test("image")?) | .data.title')
@@ -33,14 +35,12 @@ reddit(){
     target_url=${arrURLS[$idx]}
     target_name=${arrNAMES[$idx]}
     target_id=${arrIDS[$idx]}
-    echo $target_url
     ext=`echo -n "${target_url##*.}"|cut -d '?' -f 1`
     newname=`echo $target_name | sed "s/^\///;s/\// /g"`_"$subreddit"_$target_id.$ext
     wget -T $timeout -U "$useragent" --no-check-certificate -q -P down -O "wallpaper.jpg" $target_url &>/dev/null
 
 }
-
-while getopts h:w:s:l:b flag
+while getopts h:w:s:l:b:r: flag
 do
     case "${flag}" in
         b) bgtype=${OPTARG};;
@@ -48,6 +48,7 @@ do
         h) height=${OPTARG};;
         w) width=${OPTARG};;
         l) link=${OPTARG};;
+        r) sub=${OPTARG};;
     esac
 done
 
@@ -72,14 +73,13 @@ if [ ! -z $bgtype ]; then
 else
     feh+=(--bg-scale)
 fi
-if [ $link = "reddit" ]
+if [ $link = "reddit" ] || [ ! -z $sub ]
 then
-    reddit
+    reddit "$sub"
     feh+=(wallpaper.jpg)
     "${feh[@]}"
 else
     if [ ! -z $height ] || [ ! -z $width ]; then
-        echo debug
         link="${link}${width}x${height}";
     else
         link="${link}1920x1080";
