@@ -13,7 +13,7 @@ cd styli.sh
     ```
 
 ## Usage 
-    ```
+```
 # To set a random 1920x1080 background
 $ ./styli.sh
 
@@ -29,7 +29,7 @@ $ ./styli.sh -s sea -w 1080
 # To get a random wallpaper from one of the set subreddits
 # NOTE: The width/height/search parameters DON't work with reddit
 $ ./styli.sh -l reddit
-    ```
+```
 
 ## Custom subreddits
 To manage custom subreddits just edit the ```subreddits``` file by placing all your desired communities, one for each newline
