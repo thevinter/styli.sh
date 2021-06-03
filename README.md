@@ -1,4 +1,4 @@
-# Wallpaper switching on i3 made easy
+# Styli.sh - Wallpaper switching on i3 made easy
 
 Stily.sh is a Bash script that aims to automate the tedious process of finding new wallpapers, downloading and switching them via the i3 config. **Styly.sh** can search for specific wallpapers from unsplash or download
 a random image from the specified subreddits.
@@ -33,7 +33,21 @@ $ ./styli.sh -s sea -w 1080
 # NOTE: The width/height/search parameters DON't work with reddit
 $ ./styli.sh -l reddit
 ```
+## Tips And Tricks
+To set a new background every time you reboot your computer add the following to your ```i3/config``` file
+```
+exec_always path/to/script/styli.sh
+```
+
+To change background every hour launch the following command
+```
+crontab -e
+```
+and add the following to the opened file
+```
+@hourly path/to/script/styli.sh
+```
 
 ## Custom subreddits
-To manage custom subreddits just edit the ```subreddits``` file by placing all your desired communities, one for each newline
+To manage custom subreddits just edit the ```subreddits``` file by placing there all your desired communities, one for each newline
 
