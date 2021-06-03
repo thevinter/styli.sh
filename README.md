@@ -6,7 +6,7 @@ a random image from the specified subreddits.
 ![Preview](preview.png)
 
 ## Requirements
-This script is made to work with ```feh``` so having it installed is a requirement. Currently it does not support Desktop Environments.
+This script is made to work with ```feh``` so having it installed is a requirement. Currently it does not support anything other than that.
 
 ## Install
 ```
