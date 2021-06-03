@@ -54,7 +54,6 @@ do
         p) pywal=1;;
     esac
 done
-
 feh=(feh)
 if [ ! -z $bgtype ]; then
     if [ $bgtype == 'bg-center' ]; then
@@ -83,7 +82,7 @@ then
     reddit "$sub"
     feh+=(wallpaper.jpg)
     "${feh[@]}"
-    if [ pywal==1 ]; then
+    if [ $pywal -eq 1 ]; then
         wal -c 
         wal -i wallpaper.jpg -n
     fi 
@@ -100,7 +99,7 @@ else
     wget -q -O wallpaper $link
     feh+=(wallpaper)
     "${feh[@]}"
-    if [ pywal==1 ]; then
+    if [ $pywal -eq 1 ]; then
         wal -c 
         wal -i wallpaper -n
     fi
