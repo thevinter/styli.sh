@@ -40,7 +40,8 @@ reddit(){
     wget -T $timeout -U "$useragent" --no-check-certificate -q -P down -O "wallpaper.jpg" $target_url &>/dev/null
 
 }
-while getopts h:w:s:l:b:r:c: flag
+pywal=0
+while getopts h:w:s:l:b:r:c:p flag
 do
     case "${flag}" in
         b) bgtype=${OPTARG};;
@@ -50,11 +51,11 @@ do
         l) link=${OPTARG};;
         r) sub=${OPTARG};;
         c) custom=${OPTARG};;
+        p) pywal=1;;
     esac
 done
 
 feh=(feh)
-
 if [ ! -z $bgtype ]; then
     if [ $bgtype == 'bg-center' ]; then
         feh+=(--bg-center)
@@ -82,6 +83,10 @@ then
     reddit "$sub"
     feh+=(wallpaper.jpg)
     "${feh[@]}"
+    if [ pywal==1 ]; then
+        wal -c 
+        wal -i wallpaper.jpg -n
+    fi 
 else
     if [ ! -z $height ] || [ ! -z $width ]; then
         link="${link}${width}x${height}";
@@ -95,5 +100,9 @@ else
     wget -q -O wallpaper $link
     feh+=(wallpaper)
     "${feh[@]}"
+    if [ pywal==1 ]; then
+        wal -c 
+        wal -i wallpaper -n
+    fi
 fi
 
