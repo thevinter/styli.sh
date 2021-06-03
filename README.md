@@ -32,6 +32,18 @@ $ ./styli.sh -s sea -w 1080
 # To get a random wallpaper from one of the set subreddits
 # NOTE: The width/height/search parameters DON't work with reddit
 $ ./styli.sh -l reddit
+
+# To get a random wallpaper from a custom subreddit
+$ ./styli.sh -r <custom_reddit>
+$ ./styli.sh -r wallpaperdump
+
+# To use the builtin feh --bg options
+$ ./styli.sh -b <option>
+$ ./styli.sh -b bg-scale -r widescreen-wallpaper 
+
+# To add custom feh flags
+$ ./styli.sh -c <flags>
+$ ./styli.sh -c --no-xinerama -r widescreen-wallpaper
 ```
 ## Tips And Tricks
 To set a new background every time you reboot your computer add the following to your ```i3/config``` file

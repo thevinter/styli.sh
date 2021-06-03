@@ -40,7 +40,7 @@ reddit(){
     wget -T $timeout -U "$useragent" --no-check-certificate -q -P down -O "wallpaper.jpg" $target_url &>/dev/null
 
 }
-while getopts h:w:s:l:b:r: flag
+while getopts h:w:s:l:b:r:c: flag
 do
     case "${flag}" in
         b) bgtype=${OPTARG};;
@@ -49,6 +49,7 @@ do
         w) width=${OPTARG};;
         l) link=${OPTARG};;
         r) sub=${OPTARG};;
+        c) custom=${OPTARG};;
     esac
 done
 
@@ -72,6 +73,9 @@ if [ ! -z $bgtype ]; then
     fi
 else
     feh+=(--bg-scale)
+fi
+if [ ! -z $custom ]; then
+    feh+=($custom)
 fi
 if [ $link = "reddit" ] || [ ! -z $sub ]
 then
