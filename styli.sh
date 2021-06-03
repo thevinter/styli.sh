@@ -55,7 +55,8 @@ then
     reddit
     feh --bg-scale wallpaper.jpg
 else
-    if [ ! -z $height ]; then
+    if [ ! -z $height ] || [ ! -z $width ]; then
+        echo debug
         link="${link}${width}x${height}";
     else
         link="${link}1920x1080";
