@@ -1,6 +1,6 @@
 # Styli.sh - Wallpaper switching on feh made easy
 
-Stily.sh is a Bash script that aims to automate the tedious process of finding new wallpapers, downloading and switching them via the i3 config. **Styly.sh** can search for specific wallpapers from unsplash or download
+Stily.sh is a Bash script that aims to automate the tedious process of finding new wallpapers, downloading and switching them via your wm config. **Styly.sh** can search for specific wallpapers from unsplash or download
 a random image from the specified subreddits.
 
 ![Preview](preview.png)
@@ -46,7 +46,7 @@ $ ./styli.sh -c <flags>
 $ ./styli.sh -c --no-xinerama -r widescreen-wallpaper
 ```
 ## Tips And Tricks
-To set a new background every time you reboot your computer add the following to your ```i3/config``` file
+To set a new background every time you reboot your computer add the following to your ```i3/config``` file (or any other WM config)
 ```
 exec_always path/to/script/styli.sh
 ```
