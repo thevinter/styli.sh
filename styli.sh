@@ -1,14 +1,13 @@
 #!/bin/bash
 link="https://source.unsplash.com/random/"
 reddit(){
-    #cfg
     useragent="thevinter"
     timeout=60
 
-    readarray subreddits <<< subreddits
+    readarray subreddits < subreddits
     a=${#subreddits[@]}
     b=$(($RANDOM % $a))
-    subreddit=${subreddits[$b]}
+    sub=${subreddits[$b]}
     sort=$2
     top_time=$3
 
@@ -19,10 +18,9 @@ reddit(){
     if [ -z $top_time   ]; then
         top_time=""
     fi
-
+    subreddit="$(echo -e "${sub}" | tr -d '[:space:]')"
     url="https://www.reddit.com/r/$subreddit/$sort/.json?raw_json=1&t=$top_time"
     content=`wget -T $timeout -U "$useragent" -q -O - $url`
-
     urls=$(echo -n "$content"| jq -r '.data.children[]|select(.data.post_hint|test("image")?) | .data.preview.images[0].source.url')
     names=$(echo -n "$content"| jq -r '.data.children[]|select(.data.post_hint|test("image")?) | .data.title')
     ids=$(echo -n "$content"| jq -r '.data.children[]|select(.data.post_hint|test("image")?) | .data.id')
@@ -41,19 +39,44 @@ reddit(){
     wget -T $timeout -U "$useragent" --no-check-certificate -q -P down -O "wallpaper.jpg" $target_url &>/dev/null
 
 }
-while getopts h:w:s:l: flag
+
+while getopts h:w:s:l:b flag
 do
     case "${flag}" in
+        b) bgtype=${OPTARG};;
         s) search=${OPTARG};;
         h) height=${OPTARG};;
         w) width=${OPTARG};;
         l) link=${OPTARG};;
     esac
 done
+
+feh=(feh)
+
+if [ ! -z $bgtype ]; then
+    if [ $bgtype == 'bg-center' ]; then
+        feh+=(--bg-center)
+    fi
+    if [ $bgtype == 'bg-fill' ]; then
+        feh+=(--bg-fill)
+    fi
+    if [ $bgtype == 'bg-max' ]; then
+        feh+=(--bg-max)
+    fi
+    if [ $bgtype == 'bg-scale' ]; then
+        feh+=(--bg-scale)
+    fi
+    if [ $bgtype == 'bg-tile' ]; then
+        feh+=(--bg-tile)
+    fi
+else
+    feh+=(--bg-scale)
+fi
 if [ $link = "reddit" ]
 then
     reddit
-    feh --bg-scale wallpaper.jpg
+    feh+=(wallpaper.jpg)
+    "${feh[@]}"
 else
     if [ ! -z $height ] || [ ! -z $width ]; then
         echo debug
@@ -66,6 +89,7 @@ else
         link="${link}/?${search}"
     fi
     wget -q -O wallpaper $link
-    feh --bg-scale wallpaper
+    feh+=(wallpaper)
+    "${feh[@]}"
 fi
 
