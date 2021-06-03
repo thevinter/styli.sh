@@ -6,11 +6,11 @@ a random image from the specified subreddits.
 ![Preview](preview.png)
 
 ## Install
-    ```
+```
 git clone https://github.com/thevinter/styli.sh
 cd styli.sh
 ./styli.sh
-    ```
+```
 
 ## Usage 
 ```
