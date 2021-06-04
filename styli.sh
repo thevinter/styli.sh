@@ -40,18 +40,36 @@ reddit(){
     wget -T $timeout -U "$useragent" --no-check-certificate -q -P down -O "wallpaper.jpg" $target_url &>/dev/null
 
 }
+usage(){
+    echo "Usage: styli.sh [-s | --search <string>]
+                          [-h | --hight <hight>]
+                          [-w | --width <width>]
+                          [-b | --fehbg <feh bg opt>]
+                          [-c | --fehopt <feh opt>]
+                          [-r | --subreddit <subreddit>]
+                          [-l | --link <link>]
+                          [-p | --termcolor]"
+    exit 2
+}
 pywal=0
-while getopts h:w:s:l:b:r:c:p flag
+PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:c:p --long search:,hight:,width:,fehbg:,fehopt:,subreddit:,termcolor -- "$@")
+VALID_ARGUMENTS=$?
+if [ "$VALID_ARGUMENTS" != "0" ]; then
+    usage
+fi
+while :
 do
-    case "${flag}" in
-        b) bgtype=${OPTARG};;
-        s) search=${OPTARG};;
-        h) height=${OPTARG};;
-        w) width=${OPTARG};;
-        l) link=${OPTARG};;
-        r) sub=${OPTARG};;
-        c) custom=${OPTARG};;
-        p) pywal=1;;
+    case "${1}" in
+        -b | --fehbg)     bgtype=${2} ; shift 2 ;;
+        -s | --search)    search=${2} ; shift 2 ;;
+        -h | --height)    height=${2} ; shift 2 ;;
+        -w | --width)     width=${2} ; shift 2 ;;
+        -l | --link)      link=${2} ; shift 2 ;;
+        -r | --subreddit) sub=${2} ; shift 2 ;;
+        -c | --fehopt)    custom=${2} ; shift 2 ;;
+        -p | --termcolor) pywal=1 ; shift ;;
+        -- | '') shift; break ;;
+        *) echo "Unexpected option: $1 - this should not happen." ; usage ;;
     esac
 done
 feh=(feh)
