@@ -76,7 +76,7 @@ do
 done
 feh=(feh)
 if [ ! -z $dir ]; then
-    feh+=(--bg-fill --randomize $dir);
+    feh+=(--randomize $dir);
 fi
 if [ ! -z $bgtype ]; then
     if [ $bgtype == 'bg-center' ]; then
@@ -118,8 +118,8 @@ else
     if [ ! -z $search ]
     then
         link="${link}/?${search}"
+        wget -q -O wallpaper $link
     fi
-    wget -q -O wallpaper $link
     feh+=(wallpaper)
     "${feh[@]}"
     if [ $pywal -eq 1 ]; then
@@ -127,4 +127,3 @@ else
         wal -i wallpaper -n
     fi
 fi
-
