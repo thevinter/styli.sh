@@ -52,7 +52,8 @@ usage(){
     exit 2
 }
 pywal=0
-PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:c:p --long search:,hight:,width:,fehbg:,fehopt:,subreddit:,termcolor -- "$@")
+kde=false
+PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:c:pk --long search:,hight:,width:,fehbg:,fehopt:,subreddit:,termcolor,kde -- "$@")
 VALID_ARGUMENTS=$?
 if [ "$VALID_ARGUMENTS" != "0" ]; then
     usage
@@ -68,6 +69,7 @@ do
         -r | --subreddit) sub=${2} ; shift 2 ;;
         -c | --fehopt)    custom=${2} ; shift 2 ;;
         -p | --termcolor) pywal=1 ; shift ;;
+        -k | --kde) kde=true
         -- | '') shift; break ;;
         *) echo "Unexpected option: $1 - this should not happen." ; usage ;;
     esac
@@ -115,11 +117,15 @@ else
         link="${link}/?${search}"
     fi
     wget -q -O wallpaper $link
-    feh+=(wallpaper)
-    "${feh[@]}"
-    if [ $pywal -eq 1 ]; then
-        wal -c 
-        wal -i wallpaper -n
+    if [ $kde = true ]; then
+        qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'var allDesktops = desktops();print (allDesktops);for (i=0;i<allDesktops.length;i++) {d = allDesktops[i];d.wallpaperPlugin = "org.kde.image";d.currentConfigGroup = Array("Wallpaper", "org.kde.image", "General");d.writeConfig("Image", "file://wallpaper")}'
+    else
+        feh+=(wallpaper)
+        "${feh[@]}"
+        if [ $pywal -eq 1 ]; then
+            wal -c 
+            wal -i wallpaper -n
+        fi
     fi
 fi
 
