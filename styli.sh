@@ -48,11 +48,12 @@ usage(){
                           [-c | --fehopt <feh opt>]
                           [-r | --subreddit <subreddit>]
                           [-l | --link <source>]
+                          [-d | --directory <source>]
                           [-p | --termcolor]"
     exit 2
 }
 pywal=0
-PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:c:p --long search:,hight:,width:,fehbg:,fehopt:,subreddit:,termcolor -- "$@")
+PARSED_ARGUMENTS=$(getopt -a -n $0 -o d:h:w:s:l:b:r:c:p --long search:,hight:,width:,fehbg:,fehopt:,subreddit:,termcolor -- "$@")
 VALID_ARGUMENTS=$?
 if [ "$VALID_ARGUMENTS" != "0" ]; then
     usage
@@ -66,6 +67,7 @@ do
         -w | --width)     width=${2} ; shift 2 ;;
         -l | --link)      link=${2} ; shift 2 ;;
         -r | --subreddit) sub=${2} ; shift 2 ;;
+        -d | --directory) dir=${2}; shift 2 ;;      
         -c | --fehopt)    custom=${2} ; shift 2 ;;
         -p | --termcolor) pywal=1 ; shift ;;
         -- | '') shift; break ;;
@@ -73,6 +75,9 @@ do
     esac
 done
 feh=(feh)
+if [ ! -z $dir ]; then
+    feh+=(--bg-fill --randomize $dir);
+fi
 if [ ! -z $bgtype ]; then
     if [ $bgtype == 'bg-center' ]; then
         feh+=(--bg-center)
