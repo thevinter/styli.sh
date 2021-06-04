@@ -69,7 +69,7 @@ do
         -r | --subreddit) sub=${2} ; shift 2 ;;
         -c | --fehopt)    custom=${2} ; shift 2 ;;
         -p | --termcolor) pywal=1 ; shift ;;
-        -k | --kde) kde=true
+        -k | --kde) kde=true; shift ;;
         -- | '') shift; break ;;
         *) echo "Unexpected option: $1 - this should not happen." ; usage ;;
     esac
