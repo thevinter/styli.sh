@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+cd $(dirname $0)
 link="https://source.unsplash.com/random/"
 reddit(){
     useragent="thevinter"
