@@ -42,12 +42,12 @@ reddit(){
 }
 usage(){
     echo "Usage: styli.sh [-s | --search <string>]
-                          [-h | --hight <hight>]
+                          [-h | --height <hight>]
                           [-w | --width <width>]
                           [-b | --fehbg <feh bg opt>]
                           [-c | --fehopt <feh opt>]
                           [-r | --subreddit <subreddit>]
-                          [-l | --link <link>]
+                          [-l | --link <source>]
                           [-p | --termcolor]"
     exit 2
 }
