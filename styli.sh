@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-cd $(dirname $0)
+work_dir=$(dirname $0)
 link="https://source.unsplash.com/random/"
 reddit(){
     useragent="thevinter"
     timeout=60
 
-    readarray subreddits < subreddits
+    readarray subreddits < $work_dir/subreddits
     a=${#subreddits[@]}
     b=$(($RANDOM % $a))
     sub=${subreddits[$b]}
