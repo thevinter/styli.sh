@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 link="https://source.unsplash.com/random/"
 reddit(){
     useragent="thevinter"
