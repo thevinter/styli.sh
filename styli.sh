@@ -77,7 +77,7 @@ usage(){
     exit 2
 }
 pywal=0
-PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:c:d:p --long search:,hight:,width:,fehbg:,fehopt:,subreddit:,diectory:,termcolor -- "$@")
+PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:c:d:p --long search:,hight:,width:,fehbg:,fehopt:,subreddit:,directory:,termcolor -- "$@")
 VALID_ARGUMENTS=$?
 if [ "$VALID_ARGUMENTS" != "0" ]; then
     usage
