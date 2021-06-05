@@ -1,4 +1,4 @@
-# Styli.sh - Wallpaper switching on feh and KDE made easy
+# Styli.sh - Wallpaper switching on feh, nitrogen and KDE made easy
 
 Stily.sh is a Bash script that aims to automate the tedious process of finding new wallpapers, downloading and switching them via the configs. **Styly.sh** can search for specific wallpapers from unsplash or download
 a random image from the specified subreddits. If you have pywal it also can set automatically your terminal colors.
@@ -6,7 +6,7 @@ a random image from the specified subreddits. If you have pywal it also can set 
 ![Preview](preview.png)
 
 ## Requirements
-This script is made to work with ```feh``` or KDE, having one of those is a requirement. Currently it does not support GNOME out of the box since it automatically 
+This script is made to work with ```feh```, ```nitrogen```  or KDE, having one of those is a requirement. Currently it does not support GNOME out of the box since it automatically
 overrides feh's defaults. If you want to use the -p flag you will have to have ```pywal``` installed.
 
 ## Install
@@ -16,7 +16,7 @@ cd styli.sh
 ./styli.sh
 ```
 
-## Usage 
+## Usage
 ```
 # To set a random 1920x1080 background
 $ ./styli.sh
@@ -27,7 +27,7 @@ $ ./styli.sh -w 2560
 $ ./styli.sh -h 1440
 
 # To set a wallpaper based on a search term
-$ ./styli.sh -s island 
+$ ./styli.sh -s island
 $ ./styli.sh -s "sea sunset"
 $ ./styli.sh -s sea -w 1080
 
@@ -41,7 +41,7 @@ $ ./styli.sh -r wallpaperdump
 
 # To use the builtin feh --bg options
 $ ./styli.sh -b <option>
-$ ./styli.sh -b bg-scale -r widescreen-wallpaper 
+$ ./styli.sh -b bg-scale -r widescreen-wallpaper
 
 # To add custom feh flags
 $ ./styli.sh -c <flags>
@@ -50,7 +50,13 @@ $ ./styli.sh -c --no-xinerama -r widescreen-wallpaper
 # To automatically set the terminal colors
 $ ./styli.sh -p
 
-# Choose a random background from a directory 
+# To use nitrogen instead of feh
+$ ./styli.sh -n
+
+# To update > 1 screens using nitrogen
+$ ./styli.sh -n -m <number_of_screens>
+
+# Choose a random background from a directory
 $ ./styli.sh -d /path/to/dir
 ```
 ## KDE
