@@ -81,7 +81,8 @@ usage(){
     exit 2
 }
 pywal=0
-PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:c:d:p --long search:,hight:,width:,fehbg:,fehopt:,subreddit:,directory:,termcolor -- "$@")
+kde=false
+PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:c:d:pk --long search:,hight:,width:,fehbg:,fehopt:,subreddit:,directory:,termcolor:,kde -- "$@")
 VALID_ARGUMENTS=$?
 if [ "$VALID_ARGUMENTS" != "0" ]; then
     usage
@@ -98,6 +99,7 @@ do
         -c | --fehopt)    custom=${2} ; shift 2 ;;
         -d | --directory) dir=${2} ; shift 2 ;;
         -p | --termcolor) pywal=1 ; shift ;;
+        -k | --kde) kde=true ; shift ;;
         -- | '') shift; break ;;
         *) echo "Unexpected option: $1 - this should not happen." ; usage ;;
     esac
@@ -150,8 +152,18 @@ else
             link="${link}/?${search}"
         fi
         wget -q -O "${cachedir}/wallpaper.jpg" "${link}"
-        feh+=("${cachedir}/wallpaper.jpg")
-        "${feh[@]}"
+
+        if [ $kde = true ]; then
+            echo "${cachedir}/wallpaper.jpg"
+            cp "${cachedir}/wallpaper.jpg" "${cachedir}/tmp.jpg"
+            qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "var allDesktops = desktops();print (allDesktops);for (i=0;i<allDesktops.length;i++) {d = allDesktops[i];d.wallpaperPlugin = \"org.kde.image\";d.currentConfigGroup = Array(\"Wallpaper\", \"org.kde.image\", \"General\");d.writeConfig(\"Image\", \"file:${cachedir}/tmp.jpg\")}"
+            qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "var allDesktops = desktops();print (allDesktops);for (i=0;i<allDesktops.length;i++) {d = allDesktops[i];d.wallpaperPlugin = \"org.kde.image\";d.currentConfigGroup = Array(\"Wallpaper\", \"org.kde.image\", \"General\");d.writeConfig(\"Image\", \"file:${cachedir}/wallpaper.jpg\")}"
+            rm "${cachedir}/tmp.jpg"
+        else
+            feh+=("${cachedir}/wallpaper.jpg")
+            "${feh[@]}"
+        fi
+
         if [ $pywal -eq 1 ]; then
             wal -c 
             wal -i "${cachedir}/wallpaper.jpg" -n
