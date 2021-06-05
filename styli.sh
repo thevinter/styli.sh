@@ -8,12 +8,12 @@ if [ -z ${XDG_CACHE_HOME+x} ]
 then
     XDG_CACHE_HOME="${HOME}/.cache"
 fi
-confdir="${XDG_CACHE_HOME}/styli.sh"
+cachedir="${XDG_CACHE_HOME}/styli.sh"
 if [ ! -d "${confdir}" ]
 then
     mkdir -p "${confdir}"
 fi
-cachedir="${XDG_CONFIG_HOME}/styli.sh"
+configdir="${XDG_CONFIG_HOME}/styli.sh"
 if [ ! -d "${cachedir}" ]
 then
     mkdir -p "${cachedir}"
@@ -155,7 +155,6 @@ else
         wget -q -O "${cachedir}/wallpaper.jpg" "${link}"
 
         if [ $kde = true ]; then
-            echo "${cachedir}/wallpaper.jpg"
             cp "${cachedir}/wallpaper.jpg" "${cachedir}/tmp.jpg"
             qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "var allDesktops = desktops();print (allDesktops);for (i=0;i<allDesktops.length;i++) {d = allDesktops[i];d.wallpaperPlugin = \"org.kde.image\";d.currentConfigGroup = Array(\"Wallpaper\", \"org.kde.image\", \"General\");d.writeConfig(\"Image\", \"file:${cachedir}/tmp.jpg\")}"
             qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "var allDesktops = desktops();print (allDesktops);for (i=0;i<allDesktops.length;i++) {d = allDesktops[i];d.wallpaperPlugin = \"org.kde.image\";d.currentConfigGroup = Array(\"Wallpaper\", \"org.kde.image\", \"General\");d.writeConfig(\"Image\", \"file:${cachedir}/wallpaper.jpg\")}"
