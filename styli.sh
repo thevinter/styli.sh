@@ -69,7 +69,7 @@ reddit(){
 }
 usage(){
     echo "Usage: styli.sh [-s | --search <string>]
-                          [-h | --height <hight>]
+                          [-h | --height <height>]
                           [-w | --width <width>]
                           [-b | --fehbg <feh bg opt>]
                           [-c | --fehopt <feh opt>]
@@ -77,12 +77,13 @@ usage(){
                           [-l | --link <source>]
                           [-p | --termcolor]
                           [-d | --directory]
+                          [-k | --kde]
                           "
     exit 2
 }
 pywal=0
 kde=false
-PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:c:d:pk --long search:,hight:,width:,fehbg:,fehopt:,subreddit:,directory:,termcolor:,kde -- "$@")
+PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:c:d:pk --long search:,height:,width:,fehbg:,fehopt:,subreddit:,directory:,termcolor:,kde -- "$@")
 VALID_ARGUMENTS=$?
 if [ "$VALID_ARGUMENTS" != "0" ]; then
     usage
