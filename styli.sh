@@ -97,6 +97,7 @@ do
     esac
 done
 feh=(feh)
+search="${search// /_}"
 if [ ! -z $bgtype ]; then
     if [ $bgtype == 'bg-center' ]; then
         feh+=(--bg-center)
