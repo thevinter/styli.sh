@@ -71,7 +71,9 @@ usage(){
                           [-c | --fehopt <feh opt>]
                           [-r | --subreddit <subreddit>]
                           [-l | --link <source>]
-                          [-p | --termcolor]"
+                          [-p | --termcolor]
+                          [-d | --directory]
+                          "
     exit 2
 }
 pywal=0
