@@ -6,7 +6,7 @@ a random image from the specified subreddits. If you have pywal it also can set 
 ![Preview](preview.png)
 
 ## Requirements
-This script is made to work with ```feh```, ```nitrogen```  or KDE, having one of those is a requirement. Currently it does not support GNOME out of the box since it automatically
+This script is made to work with ```feh```, ```nitrogen```, ```XFCE``` or ```KDE```, having one of those is a requirement. Currently it does not support GNOME out of the box since it automatically
 overrides feh's defaults. If you want to use the -p flag you will have to have ```pywal``` installed.
 
 ## Install
