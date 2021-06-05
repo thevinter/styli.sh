@@ -1,12 +1,12 @@
-# Styli.sh - Wallpaper switching on feh made easy
+# Styli.sh - Wallpaper switching on feh and KDE made easy
 
-Stily.sh is a Bash script that aims to automate the tedious process of finding new wallpapers, downloading and switching them via the i3 config. **Styly.sh** can search for specific wallpapers from unsplash or download
+Stily.sh is a Bash script that aims to automate the tedious process of finding new wallpapers, downloading and switching them via the configs. **Styly.sh** can search for specific wallpapers from unsplash or download
 a random image from the specified subreddits. If you have pywal it also can set automatically your terminal colors.
 
 ![Preview](preview.png)
 
 ## Requirements
-This script is made to work with ```feh``` so having it installed is a requirement. Currently it does not support GNOME out of the box since it automatically 
+This script is made to work with ```feh``` or KDE, having one of those is a requirement. Currently it does not support GNOME out of the box since it automatically 
 overrides feh's defaults. If you want to use the -p flag you will have to have ```pywal``` installed.
 
 ## Install
@@ -53,6 +53,10 @@ $ ./styli.sh -p
 # Choose a random background from a directory 
 $ ./styli.sh -d /path/to/dir
 ```
+##KDE
+KDE is natively supported without the need of feh. The script currently does not allow to scale the image but all the other
+functionalities are working. To use KDE's built-in background manager use the ```-k``` flag.
+
 ## Tips And Tricks
 To set a new background every time you reboot your computer add the following to your ```i3/config``` file (or any other WM config)
 ```
