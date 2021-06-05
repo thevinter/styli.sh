@@ -1,10 +1,33 @@
 #!/usr/bin/env bash
 link="https://source.unsplash.com/random/"
+if [ -z ${XDG_CONFIG_HOME+x} ]
+then
+    XDG_CONFIG_HOME="${HOME}/.config"
+fi
+if [ -z ${XDG_CACHE_HOME+x} ]
+then
+    XDG_CACHE_HOME="${HOME}/.cache"
+fi
+confdir="${XDG_CACHE_HOME}/styli.sh"
+if [ ! -d "${confdir}" ]
+then
+    mkdir -p "${confdir}"
+fi
+cachedir="${XDG_CONFIG_HOME}/styli.sh"
+if [ ! -d "${cachedir}" ]
+then
+    mkdir -p "${cachedir}"
+fi
 reddit(){
     useragent="thevinter"
     timeout=60
 
-    readarray subreddits < subreddits
+    if [ ! -f "${confdir}/subreddits" ]
+    then
+        echo "Please install the subreddits file in ${confdir}"
+        exit 2
+    fi
+    readarray subreddits < "${confdir}/subreddits"
     a=${#subreddits[@]}
     b=$(($RANDOM % $a))
     sub=${subreddits[$b]}
@@ -37,7 +60,7 @@ reddit(){
     target_id=${arrIDS[$idx]}
     ext=`echo -n "${target_url##*.}"|cut -d '?' -f 1`
     newname=`echo $target_name | sed "s/^\///;s/\// /g"`_"$subreddit"_$target_id.$ext
-    wget -T $timeout -U "$useragent" --no-check-certificate -q -P down -O "wallpaper.jpg" $target_url &>/dev/null
+    wget -T $timeout -U "$useragent" --no-check-certificate -q -P down -O "${cachedir}/wallpaper.jpg" $target_url &>/dev/null
 
 }
 usage(){
@@ -98,11 +121,11 @@ fi
 if [ $link = "reddit" ] || [ ! -z $sub ]
 then
     reddit "$sub"
-    feh+=(wallpaper.jpg)
+    feh+=("${cachedir}/wallpaper.jpg")
     "${feh[@]}"
     if [ $pywal -eq 1 ]; then
         wal -c 
-        wal -i wallpaper.jpg -n
+        wal -i "${cachedir}/wallpaper.jpg" -n
     fi 
 else
     if [ ! -z $height ] || [ ! -z $width ]; then
@@ -114,12 +137,12 @@ else
     then
         link="${link}/?${search}"
     fi
-    wget -q -O wallpaper $link
-    feh+=(wallpaper)
+    wget -q -O "${cachedir}/wallpaper.jpg" "${link}"
+    feh+=("${cachedir}/wallpaper.jpg")
     "${feh[@]}"
     if [ $pywal -eq 1 ]; then
         wal -c 
-        wal -i wallpaper -n
+        wal -i "${cachedir}/wallpaper.jpg" -n
     fi
 fi
 
