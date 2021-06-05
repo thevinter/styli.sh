@@ -124,7 +124,6 @@ if [ ! -z $custom ]; then
 fi
 if [ ! -z $dir ]; then
     feh+=(--randomize $dir)
-    echo ${feh[@]}
     "${feh[@]}"
 else
     if [ $link = "reddit" ] || [ ! -z $sub ]
