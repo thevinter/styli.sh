@@ -54,8 +54,7 @@ $ ./styli.sh -p
 $ ./styli.sh -d /path/to/dir
 ```
 ##KDE
-KDE is natively supported without the need of feh. The script currently does not allow to scale the image but all the other
-functionalities are working. To use KDE's built-in background manager use the ```-k``` flag.
+KDE is natively supported without the need of feh. The script currently does not allow to scale the image or fetch images from reddit. To use KDE's built-in background manager use the ```-k``` flag.
 
 ## Tips And Tricks
 To set a new background every time you reboot your computer add the following to your ```i3/config``` file (or any other WM config)
