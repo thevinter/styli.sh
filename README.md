@@ -53,7 +53,7 @@ $ ./styli.sh -p
 # Choose a random background from a directory 
 $ ./styli.sh -d /path/to/dir
 ```
-##KDE
+## KDE
 KDE is natively supported without the need of feh. The script currently does not allow to scale the image or fetch images from reddit. To use KDE's built-in background manager use the ```-k``` flag.
 
 ## Tips And Tricks
