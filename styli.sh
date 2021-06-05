@@ -54,6 +54,10 @@ reddit(){
     arrIDS=($ids)
     wait # prevent spawning too many processes
     size=${#arrURLS[@]}
+    if [ $size -eq 0 ]; then
+        echo The current subreddit is not valid
+        exit 1
+    fi
     idx=$(($RANDOM % $size))
     target_url=${arrURLS[$idx]}
     target_name=${arrNAMES[$idx]}
