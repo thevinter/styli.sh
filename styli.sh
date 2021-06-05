@@ -75,7 +75,7 @@ usage(){
     exit 2
 }
 pywal=0
-PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:c:p --long search:,hight:,width:,fehbg:,fehopt:,subreddit:,termcolor -- "$@")
+PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:c:d:p --long search:,hight:,width:,fehbg:,fehopt:,subreddit:,diectory:,termcolor -- "$@")
 VALID_ARGUMENTS=$?
 if [ "$VALID_ARGUMENTS" != "0" ]; then
     usage
@@ -90,6 +90,7 @@ do
         -l | --link)      link=${2} ; shift 2 ;;
         -r | --subreddit) sub=${2} ; shift 2 ;;
         -c | --fehopt)    custom=${2} ; shift 2 ;;
+        -d | --directory) dir=${2} ; shift 2 ;;
         -p | --termcolor) pywal=1 ; shift ;;
         -- | '') shift; break ;;
         *) echo "Unexpected option: $1 - this should not happen." ; usage ;;
@@ -118,31 +119,36 @@ fi
 if [ ! -z $custom ]; then
     feh+=($custom)
 fi
-if [ $link = "reddit" ] || [ ! -z $sub ]
-then
-    reddit "$sub"
-    feh+=("${cachedir}/wallpaper.jpg")
+if [ ! -z $dir ]; then
+    feh+=(--randomize $dir)
+    echo ${feh[@]}
     "${feh[@]}"
-    if [ $pywal -eq 1 ]; then
-        wal -c 
-        wal -i "${cachedir}/wallpaper.jpg" -n
-    fi 
 else
-    if [ ! -z $height ] || [ ! -z $width ]; then
-        link="${link}${width}x${height}";
-    else
-        link="${link}1920x1080";
-    fi
-    if [ ! -z $search ]
+    if [ $link = "reddit" ] || [ ! -z $sub ]
     then
-        link="${link}/?${search}"
-    fi
-    wget -q -O "${cachedir}/wallpaper.jpg" "${link}"
-    feh+=("${cachedir}/wallpaper.jpg")
-    "${feh[@]}"
-    if [ $pywal -eq 1 ]; then
-        wal -c 
-        wal -i "${cachedir}/wallpaper.jpg" -n
+        reddit "$sub"
+        feh+=("${cachedir}/wallpaper.jpg")
+        "${feh[@]}"
+        if [ $pywal -eq 1 ]; then
+            wal -c 
+            wal -i "${cachedir}/wallpaper.jpg" -n
+        fi 
+    else
+        if [ ! -z $height ] || [ ! -z $width ]; then
+            link="${link}${width}x${height}";
+        else
+            link="${link}1920x1080";
+        fi
+        if [ ! -z $search ]
+        then
+            link="${link}/?${search}"
+        fi
+        wget -q -O "${cachedir}/wallpaper.jpg" "${link}"
+        feh+=("${cachedir}/wallpaper.jpg")
+        "${feh[@]}"
+        if [ $pywal -eq 1 ]; then
+            wal -c 
+            wal -i "${cachedir}/wallpaper.jpg" -n
+        fi
     fi
 fi
-
