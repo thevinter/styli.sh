@@ -6,7 +6,8 @@ a random image from the specified subreddits. If you have pywal it also can set 
 ![Preview](preview.png)
 
 ## Requirements
-This script is made to work with ```feh``` so having it installed is a requirement. Currently it does not support Desktop Environments. If you want to use the -p flag you will have to have ```pywal``` installed.
+This script is made to work with ```feh``` so having it installed is a requirement. Currently it does not support GNOME out of the box since it automatically 
+overrides feh's defaults. If you want to use the -p flag you will have to have ```pywal``` installed.
 
 ## Install
 ```
@@ -27,10 +28,11 @@ $ ./styli.sh -h 1440
 
 # To set a wallpaper based on a search term
 $ ./styli.sh -s island 
+$ ./styli.sh -s "sea sunset"
 $ ./styli.sh -s sea -w 1080
 
 # To get a random wallpaper from one of the set subreddits
-# NOTE: The width/height/search parameters DON't work with reddit
+# NOTE: The width/height/search parameters DON'T work with reddit
 $ ./styli.sh -l reddit
 
 # To get a random wallpaper from a custom subreddit
@@ -47,6 +49,9 @@ $ ./styli.sh -c --no-xinerama -r widescreen-wallpaper
 
 # To automatically set the terminal colors
 $ ./styli.sh -p
+
+# Choose a random background from a directory 
+$ ./styli.sh -d /path/to/dir
 ```
 ## Tips And Tricks
 To set a new background every time you reboot your computer add the following to your ```i3/config``` file (or any other WM config)
