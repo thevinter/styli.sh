@@ -8,12 +8,12 @@ if [ -z ${XDG_CACHE_HOME+x} ]
 then
     XDG_CACHE_HOME="${HOME}/.cache"
 fi
-cachedir="${XDG_CACHE_HOME}/styli.sh"
+configdir="${XDG_CONFIG_HOME}/styli.sh"
 if [ ! -d "${confdir}" ]
 then
     mkdir -p "${confdir}"
 fi
-configdir="${XDG_CONFIG_HOME}/styli.sh"
+cachedir="${XDG_CACHE_HOME}/styli.sh"
 if [ ! -d "${cachedir}" ]
 then
     mkdir -p "${cachedir}"
