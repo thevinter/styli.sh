@@ -24,15 +24,7 @@ reddit(){
     useragent="thevinter"
     timeout=60
 
-    if [ ! -f "${confdir}/subreddits" ]
-    then
-        echo "Please install the subreddits file in ${confdir}"
-        exit 2
-    fi
-    readarray subreddits < "${confdir}/subreddits"
-    a=${#subreddits[@]}
-    b=$(($RANDOM % $a))
-    sub=${subreddits[$b]}
+
     sort=$2
     top_time=$3
     if [ -z $sort   ]; then
@@ -42,10 +34,22 @@ reddit(){
     if [ -z $top_time   ]; then
         top_time=""
     fi
-    sub="$(echo -e "${sub}" | tr -d '[:space:]')"
+
     if [ ! -z $1 ]; then
         sub=$1
+    else
+      if [ ! -f "${confdir}/subreddits" ]
+      then
+          echo "Please install the subreddits file in ${confdir}"
+          exit 2
+      fi
+      readarray subreddits < "${confdir}/subreddits"
+      a=${#subreddits[@]}
+      b=$(($RANDOM % $a))
+      sub=${subreddits[$b]}
+      sub="$(echo -e "${sub}" | tr -d '[:space:]')"
     fi
+
     url="https://www.reddit.com/r/$sub/$sort/.json?raw_json=1&t=$top_time"
     content=`wget -T $timeout -U "$useragent" -q -O - $url`
     urls=$(echo -n "$content"| jq -r '.data.children[]|select(.data.post_hint|test("image")?) | .data.preview.images[0].source.url')
@@ -96,7 +100,7 @@ usage(){
                           [-p | --termcolor]
                           [-d | --directory]
                           [-k | --kde]
-                          [-x | --xfce]                          
+                          [-x | --xfce]
                           [-g | --gnome]
                           [-m | --monitors <monitor count (nitrogen)>]
                           [-n | --nitrogen]
@@ -159,7 +163,7 @@ kde_cmd() {
 
 xfce_cmd() {
   connectedOutputs=$(xrandr | grep " connected" | sed -e "s/\([A-Z0-9]\+\) connected.*/\1/")
-  activeOutput=$(xrandr | grep -e " connected [^(]" | sed -e "s/\([A-Z0-9]\+\) connected.*/\1/") 
+  activeOutput=$(xrandr | grep -e " connected [^(]" | sed -e "s/\([A-Z0-9]\+\) connected.*/\1/")
   connected=$(echo $connectedOutputs | wc -w)
 
 
@@ -167,7 +171,7 @@ xfce_cmd() {
   xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitorLVDS1/workspace0/last-image -n -t string -s  ~/Pictures/1.jpeg
 
 for i in $(xfconf-query -c xfce4-desktop -p /backdrop -l|egrep -e "screen.*/monitor.*image-path$" -e "screen.*/monitor.*/last-image$"); do
-    xfconf-query -c xfce4-desktop -p $i -n -t string -s "${cachedir}/wallpaper.jpg"  
+    xfconf-query -c xfce4-desktop -p $i -n -t string -s "${cachedir}/wallpaper.jpg"
     xfconf-query -c xfce4-desktop -p $i -s "${cachedir}/wallpaper.jpg"
 
 done
