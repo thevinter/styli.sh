@@ -74,11 +74,7 @@ $ ./styli.sh -x
 
 # KDE
 $ ./styli.sh -k
-
 ```
-
-## XFCE
-KDE is natively supported without the need of feh. The script currently does not allow to scale the image. To use XFCE's built-in background manager use the ```-x``` flag.
 
 ## Tips And Tricks
 To set a new background every time you reboot your computer add the following to your ```i3/config``` file (or any other WM config)
