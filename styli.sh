@@ -104,6 +104,26 @@ usage(){
     exit 2
 }
 
+type_check() {
+    mime_types=("image/bmp" "image/jpeg" "image/gif" "image/png" "image/heic")
+    isType=false
+
+    for requiredType in "${mime_types[@]}"
+    do
+        imageType=$(file --mime-type  "${cachedir}/wallpaper.jpg" | awk '{print $2}')
+        if [ "$requiredType" = "$imageType" ]; then
+            isType=true
+            break
+        fi
+    done
+
+    if [ $isType = false ]; then
+        echo "MIME-Type missmatch. Downloaded file is not an image!"
+        exit 1
+    fi
+
+}
+
 pywal_cmd() {
   if [ $pywal -eq 1 ]; then
       wal -c
@@ -255,6 +275,8 @@ if [ -z $dir ]; then
 	  unsplash
   fi
 fi
+
+type_check
 
 if [ $kde = true ]; then
 	kde_cmd
