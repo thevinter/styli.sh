@@ -97,6 +97,7 @@ usage(){
                           [-d | --directory]
                           [-k | --kde]
                           [-x | --xfce]                          
+                          [-g | --gnome]
                           [-m | --monitors <monitor count (nitrogen)>]
                           [-n | --nitrogen]
                           "
@@ -170,7 +171,10 @@ for i in $(xfconf-query -c xfce4-desktop -p /backdrop -l|egrep -e "screen.*/moni
     xfconf-query -c xfce4-desktop -p $i -s "${cachedir}/wallpaper.jpg"
 
 done
+}
 
+gnome_cmd() {
+	gsettings set org.gnome.desktop.background picture-uri "file://${cachedir}/wallpaper.jpg"
 }
 
 feh_cmd() {
@@ -211,10 +215,12 @@ feh_cmd() {
 pywal=0
 kde=false
 xfce=false
+gnome=false
 nitrogen=false
 monitors=1
 
-PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:c:d:m:pknx --long search:,height:,width:,fehbg:,fehopt:,subreddit:,directory:,monitors:,termcolor:,kde,nitrogen,xfce -- "$@")
+PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:c:d:m:pknxg --long search:,height:,width:,fehbg:,fehopt:,subreddit:,directory:,monitors:,termcolor:,kde,nitrogen,xfce,gnome -- "$@")
+
 VALID_ARGUMENTS=$?
 if [ "$VALID_ARGUMENTS" != "0" ]; then
     usage
@@ -236,6 +242,7 @@ do
         -p | --termcolor) pywal=1 ; shift ;;
         -k | --kde) 	  kde=true ; shift ;;
         -x | --xfce)     xfce=true ; shift ;;
+        -g | --gnome) 	  gnome=true ; shift ;;
         -- | '') shift; break ;;
         *) echo "Unexpected option: $1 - this should not happen." ; usage ;;
     esac
@@ -253,6 +260,8 @@ if [ $kde = true ]; then
 	kde_cmd
 elif [ $xfce = true ]; then
   xfce_cmd
+elif [ $gnome = true ]; then
+	gnome_cmd
 elif [ $nitrogen = true ]; then
 	nitrogen_cmd
 else
