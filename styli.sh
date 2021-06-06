@@ -96,6 +96,7 @@ usage(){
                           [-p | --termcolor]
                           [-d | --directory]
                           [-k | --kde]
+                          [-g | --gnome]
                           [-m | --monitors <monitor count (nitrogen)>]
                           [-n | --nitrogen]
                           "
@@ -155,6 +156,10 @@ kde_cmd() {
     rm "${cachedir}/tmp.jpg"
 }
 
+gnome_cmd() {
+	gsettings set org.gnome.desktop.background picture-uri "file://${cachedir}/wallpaper.jpg"
+}
+
 feh_cmd() {
   local feh=(feh)
   if [ ! -z $bgtype ]; then
@@ -192,10 +197,11 @@ feh_cmd() {
 
 pywal=0
 kde=false
+gnome=false
 nitrogen=false
 monitors=1
 
-PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:c:d:m:pkn --long search:,height:,width:,fehbg:,fehopt:,subreddit:,directory:,monitors:,termcolor:,kde,nitrogen -- "$@")
+PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:c:d:m:pkgn --long search:,height:,width:,fehbg:,fehopt:,subreddit:,directory:,monitors:,termcolor:,kde,gnome,nitrogen -- "$@")
 VALID_ARGUMENTS=$?
 if [ "$VALID_ARGUMENTS" != "0" ]; then
     usage
@@ -216,6 +222,7 @@ do
         -d | --directory) dir=${2} ; shift 2 ;;
         -p | --termcolor) pywal=1 ; shift ;;
         -k | --kde) 	  kde=true ; shift ;;
+        -g | --gnome) 	  gnome=true ; shift ;;
         -- | '') shift; break ;;
         *) echo "Unexpected option: $1 - this should not happen." ; usage ;;
     esac
@@ -231,6 +238,8 @@ fi
 
 if [ $kde = true ]; then
 	kde_cmd
+elif [ $gnome = true ]; then
+	gnome_cmd
 elif [ $nitrogen = true ]; then
 	nitrogen_cmd
 else
