@@ -96,6 +96,7 @@ usage(){
                           [-p | --termcolor]
                           [-d | --directory]
                           [-k | --kde]
+                          [-x | --xfce]                          
                           [-g | --gnome]
                           [-m | --monitors <monitor count (nitrogen)>]
                           [-n | --nitrogen]
@@ -156,6 +157,22 @@ kde_cmd() {
     rm "${cachedir}/tmp.jpg"
 }
 
+xfce_cmd() {
+  connectedOutputs=$(xrandr | grep " connected" | sed -e "s/\([A-Z0-9]\+\) connected.*/\1/")
+  activeOutput=$(xrandr | grep -e " connected [^(]" | sed -e "s/\([A-Z0-9]\+\) connected.*/\1/") 
+  connected=$(echo $connectedOutputs | wc -w)
+
+
+  xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/image-path -n -t string -s  ~/Pictures/1.jpeg
+  xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitorLVDS1/workspace0/last-image -n -t string -s  ~/Pictures/1.jpeg
+
+for i in $(xfconf-query -c xfce4-desktop -p /backdrop -l|egrep -e "screen.*/monitor.*image-path$" -e "screen.*/monitor.*/last-image$"); do
+    xfconf-query -c xfce4-desktop -p $i -n -t string -s "${cachedir}/wallpaper.jpg"  
+    xfconf-query -c xfce4-desktop -p $i -s "${cachedir}/wallpaper.jpg"
+
+done
+}
+
 gnome_cmd() {
 	gsettings set org.gnome.desktop.background picture-uri "file://${cachedir}/wallpaper.jpg"
 }
@@ -197,11 +214,13 @@ feh_cmd() {
 
 pywal=0
 kde=false
+xfce=false
 gnome=false
 nitrogen=false
 monitors=1
 
-PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:c:d:m:pkgn --long search:,height:,width:,fehbg:,fehopt:,subreddit:,directory:,monitors:,termcolor:,kde,gnome,nitrogen -- "$@")
+PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:c:d:m:pknxg --long search:,height:,width:,fehbg:,fehopt:,subreddit:,directory:,monitors:,termcolor:,kde,nitrogen,xfce,gnome -- "$@")
+
 VALID_ARGUMENTS=$?
 if [ "$VALID_ARGUMENTS" != "0" ]; then
     usage
@@ -222,6 +241,7 @@ do
         -d | --directory) dir=${2} ; shift 2 ;;
         -p | --termcolor) pywal=1 ; shift ;;
         -k | --kde) 	  kde=true ; shift ;;
+        -x | --xfce)     xfce=true ; shift ;;
         -g | --gnome) 	  gnome=true ; shift ;;
         -- | '') shift; break ;;
         *) echo "Unexpected option: $1 - this should not happen." ; usage ;;
@@ -238,6 +258,8 @@ fi
 
 if [ $kde = true ]; then
 	kde_cmd
+elif [ $xfce = true ]; then
+  xfce_cmd
 elif [ $gnome = true ]; then
 	gnome_cmd
 elif [ $nitrogen = true ]; then

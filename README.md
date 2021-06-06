@@ -1,12 +1,14 @@
-# Styli.sh - Wallpaper switching on feh, nitrogen, KDE and GNOME made easy
+# Styli.sh - Wallpaper switching made easy
 
-Stily.sh is a Bash script that aims to automate the tedious process of finding new wallpapers, downloading and switching them via the configs. **Styly.sh** can search for specific wallpapers from unsplash or download
+
+Styli.sh is a Bash script that aims to automate the tedious process of finding new wallpapers, downloading and switching them via the configs. **Styli.sh** can search for specific wallpapers from unsplash or download
 a random image from the specified subreddits. If you have pywal it also can set automatically your terminal colors.
 
 ![Preview](preview.png)
 
 ## Requirements
-This script is made to work with ```feh```, ```nitrogen```  or KDE, having one of those is a requirement.
+
+This script is made to work with ```feh```, ```nitrogen```, ```XFCE``` or ```KDE```, having one of those is a requirement.
 If you want to use the -p flag you will have to have ```pywal``` installed.
 
 ## Install
@@ -62,6 +64,9 @@ $ ./styli.sh -d /path/to/dir
 ## KDE & GNOME
 KDE and GNOME are natively supported without the need of feh. The script currently does not allow to scale the image or fetch images from reddit.
 To use KDE's or GNOME's built-in background manager use the ```-k``` or ```-g``` flag respectively.
+
+## XFCE
+KDE is natively supported without the need of feh. The script currently does not allow to scale the image. To use XFCE's built-in background manager use the ```-x``` flag.
 
 ## Tips And Tricks
 To set a new background every time you reboot your computer add the following to your ```i3/config``` file (or any other WM config)
