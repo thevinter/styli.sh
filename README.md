@@ -62,7 +62,7 @@ $ ./styli.sh -n -m <number_of_screens>
 $ ./styli.sh -d /path/to/dir
 ```
 ## KDE, GNOME & XFCE
-KDE and GNOME are natively supported without the need of feh. The script currently does not allow to scale the image.
+KDE, GNOME and XFCE are natively supported without the need of feh. The script currently does not allow to scale the image.
 To use their built-in background managers use the appropriate flag.
 
 ```
