@@ -239,8 +239,8 @@ do
         -n | --nitrogen)  nitrogen=true ; shift ;;
         -d | --directory) dir=${2} ; shift 2 ;;
         -p | --termcolor) pywal=1 ; shift ;;
-        -k | --kde) 	  kde=true ; shift ;;
-        -x | --xfce)     xfce=true ; shift ;;
+        -k | --kde) 	    kde=true ; shift ;;
+        -x | --xfce)      xfce=true ; shift ;;
         -g | --gnome) 	  gnome=true ; shift ;;
         -- | '') shift; break ;;
         *) echo "Unexpected option: $1 - this should not happen." ; usage ;;
@@ -249,12 +249,10 @@ done
 
 if [ ! -z $dir ]; then
     select_random_wallpaper
+elif [ $link = "reddit" ] || [ ! -z $sub ]; then
+    reddit "$sub"
 else
-    if [ $link = "reddit" ] || [ ! -z $sub ]; then
-        reddit "$sub"
-    else
-        unsplash
-    fi
+    unsplash
 fi
 
 if [ $kde = true ]; then
