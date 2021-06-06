@@ -8,7 +8,7 @@ a random image from the specified subreddits. If you have pywal it also can set 
 
 ## Requirements
 
-This script is made to work with ```feh```, ```nitrogen```, ```XFCE``` or ```KDE```, having one of those is a requirement.
+This script is made to work with ```feh```, ```nitrogen```, ```XFCE```, ```GNOME``` or ```KDE```, having one of those is a requirement.
 If you want to use the -p flag you will have to have ```pywal``` installed.
 
 ## Install
@@ -61,9 +61,21 @@ $ ./styli.sh -n -m <number_of_screens>
 # Choose a random background from a directory
 $ ./styli.sh -d /path/to/dir
 ```
-## KDE & GNOME
-KDE and GNOME are natively supported without the need of feh. The script currently does not allow to scale the image or fetch images from reddit.
-To use KDE's or GNOME's built-in background manager use the ```-k``` or ```-g``` flag respectively.
+## KDE, GNOME & XFCE
+KDE and GNOME are natively supported without the need of feh. The script currently does not allow to scale the image.
+To use their built-in background managers use the appropriate flag.
+
+```
+# GNOME
+$ ./styli.sh -g
+
+# XFCE
+$ ./styli.sh -x
+
+# KDE
+$ ./styli.sh -k
+
+```
 
 ## XFCE
 KDE is natively supported without the need of feh. The script currently does not allow to scale the image. To use XFCE's built-in background manager use the ```-x``` flag.
@@ -86,3 +98,6 @@ and add the following to the opened file
 ## Custom subreddits
 To manage custom subreddits just edit the ```subreddits``` file by placing there all your desired communities, one for each newline
 
+## TODO
+* Cinnamon support
+* Remove the need for flags by reading `$DESKTOP_SESSION`
