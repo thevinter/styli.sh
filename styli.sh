@@ -1,22 +1,18 @@
 #!/usr/bin/env bash
 link="https://source.unsplash.com/random/"
 
-if [ -z ${XDG_CONFIG_HOME+x} ]
-then
+if [ -z ${XDG_CONFIG_HOME+x} ]; then
     XDG_CONFIG_HOME="${HOME}/.config"
 fi
-if [ -z ${XDG_CACHE_HOME+x} ]
-then
+if [ -z ${XDG_CACHE_HOME+x} ]; then
     XDG_CACHE_HOME="${HOME}/.cache"
 fi
 confdir="${XDG_CONFIG_HOME}/styli.sh"
-if [ ! -d "${confdir}" ]
-then
+if [ ! -d "${confdir}" ]; then
     mkdir -p "${confdir}"
 fi
 cachedir="${XDG_CACHE_HOME}/styli.sh"
-if [ ! -d "${cachedir}" ]
-then
+if [ ! -d "${cachedir}" ]; then
     mkdir -p "${cachedir}"
 fi
 
@@ -39,8 +35,7 @@ reddit(){
     if [ ! -z $1 ]; then
         sub=$1
     else
-        if [ ! -f "${confdir}/subreddits" ]
-        then
+        if [ ! -f "${confdir}/subreddits" ]; then
             echo "Please install the subreddits file in ${confdir}"
             exit 2
         fi
@@ -82,8 +77,7 @@ unsplash() {
         link="${link}1920x1080";
     fi
 
-    if [ ! -z $search ]
-    then
+    if [ ! -z $search ]; then
         link="${link}/?${search}"
     fi
 
@@ -92,19 +86,19 @@ unsplash() {
 
 usage(){
     echo "Usage: styli.sh [-s | --search <string>]
-                          [-h | --height <height>]
-                          [-w | --width <width>]
-                          [-b | --fehbg <feh bg opt>]
-                          [-c | --fehopt <feh opt>]
-                          [-r | --subreddit <subreddit>]
-                          [-l | --link <source>]
-                          [-p | --termcolor]
-                          [-d | --directory]
-                          [-k | --kde]
-                          [-x | --xfce]
-                          [-g | --gnome]
-                          [-m | --monitors <monitor count (nitrogen)>]
-                          [-n | --nitrogen]
+    [-h | --height <height>]
+    [-w | --width <width>]
+    [-b | --fehbg <feh bg opt>]
+    [-c | --fehopt <feh opt>]
+    [-r | --subreddit <subreddit>]
+    [-l | --link <source>]
+    [-p | --termcolor]
+    [-d | --directory]
+    [-k | --kde]
+    [-x | --xfce]
+    [-g | --gnome]
+    [-m | --monitors <monitor count (nitrogen)>]
+    [-n | --nitrogen]
     "
     exit 2
 }
@@ -137,6 +131,30 @@ pywal_cmd() {
         wal -c
         wal -i ${wallpaper} -n -q
     fi
+}
+
+sway_cmd() {
+    if [ ! -z $bgtype  ]; then
+        if [ $bgtype == 'bg-center'  ]; then
+            mode="center"
+        fi
+        if [ $bgtype == 'bg-fill'  ]; then
+            mode="fill"
+        fi
+        if [ $bgtype == 'bg-max'  ]; then
+            mode="fit"
+        fi
+        if [ $bgtype == 'bg-scale'  ]; then
+            mode="stretch"
+        fi
+        if [ $bgtype == 'bg-tile'  ]; then
+            mode="tile"
+        fi
+    else
+        mode="stretch"
+    fi
+    swaymsg output "*" bg "${wallpaper}" "${mode}"
+
 }
 
 nitrogen_cmd() {
@@ -235,9 +253,10 @@ kde=false
 xfce=false
 gnome=false
 nitrogen=false
+sway=false
 monitors=1
 
-PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:c:d:m:pknxg --long search:,height:,width:,fehbg:,fehopt:,subreddit:,directory:,monitors:,termcolor:,kde,nitrogen,xfce,gnome -- "$@")
+PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:c:d:m:pknxgy --long search:,height:,width:,fehbg:,fehopt:,subreddit:,directory:,monitors:,termcolor:,kde,nitrogen,xfce,gnome,sway -- "$@")
 
 VALID_ARGUMENTS=$?
 if [ "$VALID_ARGUMENTS" != "0" ]; then
@@ -258,9 +277,10 @@ do
         -n | --nitrogen)  nitrogen=true ; shift ;;
         -d | --directory) dir=${2} ; shift 2 ;;
         -p | --termcolor) pywal=1 ; shift ;;
-        -k | --kde) 	    kde=true ; shift ;;
+        -k | --kde) 	  kde=true ; shift ;;
         -x | --xfce)      xfce=true ; shift ;;
         -g | --gnome) 	  gnome=true ; shift ;;
+        -y | --sway)      sway=true ; shift ;;
         -- | '') shift; break ;;
         *) echo "Unexpected option: $1 - this should not happen." ; usage ;;
     esac
@@ -284,6 +304,8 @@ elif [ $gnome = true ]; then
     gnome_cmd
 elif [ $nitrogen = true ]; then
     nitrogen_cmd
+elif [ $sway = true ]; then
+    sway_cmd
 else
     feh_cmd
 fi
