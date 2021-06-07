@@ -110,13 +110,13 @@ usage(){
 }
 
 select_random_wallpaper () {
-    wallpaper=$(find $dir -type f \( -name "*.jpg" -o -name "*.png" \) -print | shuf -n 1)
+    wallpaper=$(find $dir -type f \( -iname "*.jpg" -o -iname "*.png" -o -iname "*.svg" -o -iname "*.gif" \) -print | shuf -n 1)
 }
 
 pywal_cmd() {
     if [ $pywal -eq 1 ]; then
         wal -c
-        wal -i ${wallpaper} -n
+        wal -i ${wallpaper} -n -q
     fi
 }
 
