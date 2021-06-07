@@ -20,19 +20,12 @@ then
     mkdir -p "${cachedir}"
 fi
 
+wallpaper="${cachedir}/wallpaper.jpg"
+
 reddit(){
     useragent="thevinter"
     timeout=60
 
-    if [ ! -f "${confdir}/subreddits" ]
-    then
-        echo "Please install the subreddits file in ${confdir}"
-        exit 2
-    fi
-    readarray subreddits < "${confdir}/subreddits"
-    a=${#subreddits[@]}
-    b=$(($RANDOM % $a))
-    sub=${subreddits[$b]}
     sort=$2
     top_time=$3
     if [ -z $sort   ]; then
@@ -42,10 +35,22 @@ reddit(){
     if [ -z $top_time   ]; then
         top_time=""
     fi
-    sub="$(echo -e "${sub}" | tr -d '[:space:]')"
+
     if [ ! -z $1 ]; then
         sub=$1
+    else
+        if [ ! -f "${confdir}/subreddits" ]
+        then
+            echo "Please install the subreddits file in ${confdir}"
+            exit 2
+        fi
+        readarray subreddits < "${confdir}/subreddits"
+        a=${#subreddits[@]}
+        b=$(($RANDOM % $a))
+        sub=${subreddits[$b]}
+        sub="$(echo -e "${sub}" | tr -d '[:space:]')"
     fi
+
     url="https://www.reddit.com/r/$sub/$sort/.json?raw_json=1&t=$top_time"
     content=`wget -T $timeout -U "$useragent" -q -O - $url`
     urls=$(echo -n "$content"| jq -r '.data.children[]|select(.data.post_hint|test("image")?) | .data.preview.images[0].source.url')
@@ -66,23 +71,23 @@ reddit(){
     target_id=${arrIDS[$idx]}
     ext=`echo -n "${target_url##*.}"|cut -d '?' -f 1`
     newname=`echo $target_name | sed "s/^\///;s/\// /g"`_"$subreddit"_$target_id.$ext
-    wget -T $timeout -U "$useragent" --no-check-certificate -q -P down -O "${cachedir}/wallpaper.jpg" $target_url &>/dev/null
+    wget -T $timeout -U "$useragent" --no-check-certificate -q -P down -O ${wallpaper} $target_url &>/dev/null
 }
 
 unsplash() {
-  local search="${search// /_}"
-  if [ ! -z $height ] || [ ! -z $width ]; then
-      link="${link}${width}x${height}";
-  else
-      link="${link}1920x1080";
-  fi
+    local search="${search// /_}"
+    if [ ! -z $height ] || [ ! -z $width ]; then
+        link="${link}${width}x${height}";
+    else
+        link="${link}1920x1080";
+    fi
 
-  if [ ! -z $search ]
-  then
-      link="${link}/?${search}"
-  fi
+    if [ ! -z $search ]
+    then
+        link="${link}/?${search}"
+    fi
 
-  wget -q -O "${cachedir}/wallpaper.jpg" $link
+    wget -q -O ${wallpaper} $link
 }
 
 usage(){
@@ -96,120 +101,114 @@ usage(){
                           [-p | --termcolor]
                           [-d | --directory]
                           [-k | --kde]
-                          [-x | --xfce]                          
+                          [-x | --xfce]
                           [-g | --gnome]
                           [-m | --monitors <monitor count (nitrogen)>]
                           [-n | --nitrogen]
-                          "
+    "
     exit 2
 }
 
+select_random_wallpaper () {
+    wallpaper=$(find $dir -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.svg" -o -iname "*.gif" \) -print | shuf -n 1)
+}
+
 pywal_cmd() {
-  if [ $pywal -eq 1 ]; then
-      wal -c
-      wal -i "${cachedir}/wallpaper.jpg" -n
-  fi
+    if [ $pywal -eq 1 ]; then
+        wal -c
+        wal -i ${wallpaper} -n -q
+    fi
 }
 
 nitrogen_cmd() {
-  for ((monitor=0; monitor < $monitors; monitor++))
-  do
-      local nitrogen=(nitrogen --save --head=${monitor})
+    for ((monitor=0; monitor < $monitors; monitor++))
+    do
+        local nitrogen=(nitrogen --save --head=${monitor})
 
-      if [ ! -z $bgtype ]; then
-          if [ $bgtype == 'bg-center' ]; then
-              nitrogen+=(--set-centered)
-          fi
-          if [ $bgtype == 'bg-fill' ]; then
-              nitrogen+=(--set-zoom-fill)
-          fi
-          if [ $bgtype == 'bg-max' ]; then
-              nitrogen+=(--set-zoom)
-          fi
-          if [ $bgtype == 'bg-scale' ]; then
-              nitrogen+=(--set-scaled)
-          fi
-          if [ $bgtype == 'bg-tile' ]; then
-              nitrogen+=(--set-tiled)
-          fi
-      else
-          nitrogen+=(--set-scaled)
-      fi
+        if [ ! -z $bgtype ]; then
+            if [ $bgtype == 'bg-center' ]; then
+                nitrogen+=(--set-centered)
+            fi
+            if [ $bgtype == 'bg-fill' ]; then
+                nitrogen+=(--set-zoom-fill)
+            fi
+            if [ $bgtype == 'bg-max' ]; then
+                nitrogen+=(--set-zoom)
+            fi
+            if [ $bgtype == 'bg-scale' ]; then
+                nitrogen+=(--set-scaled)
+            fi
+            if [ $bgtype == 'bg-tile' ]; then
+                nitrogen+=(--set-tiled)
+            fi
+        else
+            nitrogen+=(--set-scaled)
+        fi
 
-      if [ ! -z $custom ]; then
-          nitrogen+=($custom)
-      fi
+        if [ ! -z $custom ]; then
+            nitrogen+=($custom)
+        fi
 
-      if [ ! -z $dir ]; then
-          nitrogen+=(--random $dir)
-      else
-	        nitrogen+=("${cachedir}/wallpaper.jpg")
-      fi
+        nitrogen+=(${wallpaper})
 
-      "${nitrogen[@]}"
-  done
+        "${nitrogen[@]}"
+    done
 }
 
 kde_cmd() {
-	cp "${cachedir}/wallpaper.jpg" "${cachedir}/tmp.jpg"
+    cp ${wallpaper} "${cachedir}/tmp.jpg"
     qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "var allDesktops = desktops();print (allDesktops);for (i=0;i<allDesktops.length;i++) {d = allDesktops[i];d.wallpaperPlugin = \"org.kde.image\";d.currentConfigGroup = Array(\"Wallpaper\", \"org.kde.image\", \"General\");d.writeConfig(\"Image\", \"file:${cachedir}/tmp.jpg\")}"
-	qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "var allDesktops = desktops();print (allDesktops);for (i=0;i<allDesktops.length;i++) {d = allDesktops[i];d.wallpaperPlugin = \"org.kde.image\";d.currentConfigGroup = Array(\"Wallpaper\", \"org.kde.image\", \"General\");d.writeConfig(\"Image\", \"file:${cachedir}/wallpaper.jpg\")}"
+    qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "var allDesktops = desktops();print (allDesktops);for (i=0;i<allDesktops.length;i++) {d = allDesktops[i];d.wallpaperPlugin = \"org.kde.image\";d.currentConfigGroup = Array(\"Wallpaper\", \"org.kde.image\", \"General\");d.writeConfig(\"Image\", \"file:${wallpaper}\")}"
     rm "${cachedir}/tmp.jpg"
 }
 
 xfce_cmd() {
-  connectedOutputs=$(xrandr | grep " connected" | sed -e "s/\([A-Z0-9]\+\) connected.*/\1/")
-  activeOutput=$(xrandr | grep -e " connected [^(]" | sed -e "s/\([A-Z0-9]\+\) connected.*/\1/") 
-  connected=$(echo $connectedOutputs | wc -w)
+    connectedOutputs=$(xrandr | grep " connected" | sed -e "s/\([A-Z0-9]\+\) connected.*/\1/")
+    activeOutput=$(xrandr | grep -e " connected [^(]" | sed -e "s/\([A-Z0-9]\+\) connected.*/\1/")
+    connected=$(echo $connectedOutputs | wc -w)
 
+    xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/image-path -n -t string -s  ~/Pictures/1.jpeg
+    xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitorLVDS1/workspace0/last-image -n -t string -s  ~/Pictures/1.jpeg
 
-  xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/image-path -n -t string -s  ~/Pictures/1.jpeg
-  xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitorLVDS1/workspace0/last-image -n -t string -s  ~/Pictures/1.jpeg
-
-for i in $(xfconf-query -c xfce4-desktop -p /backdrop -l|egrep -e "screen.*/monitor.*image-path$" -e "screen.*/monitor.*/last-image$"); do
-    xfconf-query -c xfce4-desktop -p $i -n -t string -s "${cachedir}/wallpaper.jpg"  
-    xfconf-query -c xfce4-desktop -p $i -s "${cachedir}/wallpaper.jpg"
-
-done
+    for i in $(xfconf-query -c xfce4-desktop -p /backdrop -l|egrep -e "screen.*/monitor.*image-path$" -e "screen.*/monitor.*/last-image$"); do
+        xfconf-query -c xfce4-desktop -p $i -n -t string -s ${wallpaper}
+        xfconf-query -c xfce4-desktop -p $i -s ${wallpaper}
+    done
 }
 
 gnome_cmd() {
-	gsettings set org.gnome.desktop.background picture-uri "file://${cachedir}/wallpaper.jpg"
+    gsettings set org.gnome.desktop.background picture-uri "file://${wallpaper}"
 }
 
 feh_cmd() {
-  local feh=(feh)
-  if [ ! -z $bgtype ]; then
-      if [ $bgtype == 'bg-center' ]; then
-          feh+=(--bg-center)
-      fi
-      if [ $bgtype == 'bg-fill' ]; then
-          feh+=(--bg-fill)
-      fi
-      if [ $bgtype == 'bg-max' ]; then
-          feh+=(--bg-max)
-      fi
-      if [ $bgtype == 'bg-scale' ]; then
-          feh+=(--bg-scale)
-      fi
-      if [ $bgtype == 'bg-tile' ]; then
-          feh+=(--bg-tile)
-      fi
-  else
-	  feh+=(--bg-scale)
-  fi
+    local feh=(feh)
+    if [ ! -z $bgtype ]; then
+        if [ $bgtype == 'bg-center' ]; then
+            feh+=(--bg-center)
+        fi
+        if [ $bgtype == 'bg-fill' ]; then
+            feh+=(--bg-fill)
+        fi
+        if [ $bgtype == 'bg-max' ]; then
+            feh+=(--bg-max)
+        fi
+        if [ $bgtype == 'bg-scale' ]; then
+            feh+=(--bg-scale)
+        fi
+        if [ $bgtype == 'bg-tile' ]; then
+            feh+=(--bg-tile)
+        fi
+    else
+        feh+=(--bg-scale)
+    fi
 
-  if [ ! -z $custom ]; then
-      feh+=($custom)
-  fi
+    if [ ! -z $custom ]; then
+        feh+=($custom)
+    fi
 
-  if [ ! -z $dir ]; then
-    feh+=(--randomize $dir)
-  else
-	  feh+=("${cachedir}/wallpaper.jpg")
-  fi
+    feh+=(${wallpaper})
 
-  "${feh[@]}"
+    "${feh[@]}"
 }
 
 pywal=0
@@ -240,32 +239,32 @@ do
         -n | --nitrogen)  nitrogen=true ; shift ;;
         -d | --directory) dir=${2} ; shift 2 ;;
         -p | --termcolor) pywal=1 ; shift ;;
-        -k | --kde) 	  kde=true ; shift ;;
-        -x | --xfce)     xfce=true ; shift ;;
+        -k | --kde) 	    kde=true ; shift ;;
+        -x | --xfce)      xfce=true ; shift ;;
         -g | --gnome) 	  gnome=true ; shift ;;
         -- | '') shift; break ;;
         *) echo "Unexpected option: $1 - this should not happen." ; usage ;;
     esac
 done
 
-if [ -z $dir ]; then
-  if [ $link = "reddit" ] || [ ! -z $sub ]; then
-	  reddit "$sub"
-  else
-	  unsplash
-  fi
+if [ ! -z $dir ]; then
+    select_random_wallpaper
+elif [ $link = "reddit" ] || [ ! -z $sub ]; then
+    reddit "$sub"
+else
+    unsplash
 fi
 
 if [ $kde = true ]; then
-	kde_cmd
+    kde_cmd
 elif [ $xfce = true ]; then
-  xfce_cmd
+    xfce_cmd
 elif [ $gnome = true ]; then
-	gnome_cmd
+    gnome_cmd
 elif [ $nitrogen = true ]; then
-	nitrogen_cmd
+    nitrogen_cmd
 else
-	feh_cmd
+    feh_cmd
 fi
 
 pywal_cmd
