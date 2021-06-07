@@ -8,7 +8,7 @@ a random image from the specified subreddits. If you have pywal it also can set 
 
 ## Requirements
 
-This script is made to work with ```feh```, ```nitrogen```, ```XFCE```, ```GNOME``` or ```KDE```, having one of those is a requirement.
+This script is made to work with ```feh```, ```nitrogen```, ```XFCE```, ```GNOME```, ```KDE``` or ```Sway```, having one of those is a requirement.
 If you want to use the -p flag you will have to have ```pywal``` installed.
 
 ## Install
@@ -61,8 +61,8 @@ $ ./styli.sh -n -m <number_of_screens>
 # Choose a random background from a directory
 $ ./styli.sh -d /path/to/dir
 ```
-## KDE, GNOME & XFCE
-KDE, GNOME and XFCE are natively supported without the need of feh. The script currently does not allow to scale the image.
+## KDE, GNOME, XFCE & Sway
+KDE, GNOME, XFCE and Sway are natively supported without the need of feh. The script currently does not allow to scale the image.
 To use their built-in background managers use the appropriate flag.
 
 ```
@@ -74,6 +74,9 @@ $ ./styli.sh -x
 
 # KDE
 $ ./styli.sh -k
+
+# Sway
+$ ./styli.sh -y
 ```
 
 ## Tips And Tricks

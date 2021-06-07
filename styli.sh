@@ -103,6 +103,7 @@ usage(){
                           [-k | --kde]
                           [-x | --xfce]
                           [-g | --gnome]
+                          [-y | --sway]
                           [-m | --monitors <monitor count (nitrogen)>]
                           [-n | --nitrogen]
     "
@@ -199,6 +200,29 @@ gnome_cmd() {
     gsettings set org.gnome.desktop.background picture-uri "file://${wallpaper}"
 }
 
+sway_cmd() {
+    if [ ! -z $bgtype ]; then
+        if [ $bgtype == 'bg-center' ]; then
+            mode="center"
+        fi
+        if [ $bgtype == 'bg-fill' ]; then
+            mode="fill"
+        fi
+        if [ $bgtype == 'bg-max' ]; then
+            mode="fit"
+        fi
+        if [ $bgtype == 'bg-scale' ]; then
+            mode="stretch"
+        fi
+        if [ $bgtype == 'bg-tile' ]; then
+            mode="tile"
+        fi
+    else
+        mode="stretch"
+    fi
+    swaymsg output "*" bg "${wallpaper}" "${mode}"
+}
+
 feh_cmd() {
     local feh=(feh)
     if [ ! -z $bgtype ]; then
@@ -235,9 +259,10 @@ kde=false
 xfce=false
 gnome=false
 nitrogen=false
+sway=false
 monitors=1
 
-PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:c:d:m:pknxg --long search:,height:,width:,fehbg:,fehopt:,subreddit:,directory:,monitors:,termcolor:,kde,nitrogen,xfce,gnome -- "$@")
+PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:c:d:m:pknxgy --long search:,height:,width:,fehbg:,fehopt:,subreddit:,directory:,monitors:,termcolor:,kde,nitrogen,xfce,gnome,sway -- "$@")
 
 VALID_ARGUMENTS=$?
 if [ "$VALID_ARGUMENTS" != "0" ]; then
@@ -261,6 +286,7 @@ do
         -k | --kde) 	    kde=true ; shift ;;
         -x | --xfce)      xfce=true ; shift ;;
         -g | --gnome) 	  gnome=true ; shift ;;
+        -y | --sway) 	  sway=true ; shift ;;
         -- | '') shift; break ;;
         *) echo "Unexpected option: $1 - this should not happen." ; usage ;;
     esac
@@ -284,6 +310,8 @@ elif [ $gnome = true ]; then
     gnome_cmd
 elif [ $nitrogen = true ]; then
     nitrogen_cmd
+elif [ $sway = true ]; then
+    sway_cmd
 else
     feh_cmd
 fi
