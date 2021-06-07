@@ -115,7 +115,7 @@ type_check() {
 
     for requiredType in "${mime_types[@]}"
     do
-        imageType=$(file --mime-type  ${walpaper} | awk '{print $2}')
+        imageType=$(file --mime-type  ${wallpaper} | awk '{print $2}')
         if [ "$requiredType" = "$imageType" ]; then
             isType=true
             break
