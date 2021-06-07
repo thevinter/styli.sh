@@ -109,6 +109,25 @@ usage(){
     exit 2
 }
 
+type_check() {
+    mime_types=("image/bmp" "image/jpeg" "image/gif" "image/png" "image/heic")
+    isType=false
+
+    for requiredType in "${mime_types[@]}"
+    do
+        imageType=$(file --mime-type  ${walpaper | awk '{print $2}')
+        if [ "$requiredType" = "$imageType" ]; then
+            isType=true
+            break
+        fi
+    done
+
+    if [ $isType = false ]; then
+        echo "MIME-Type missmatch. Downloaded file is not an image!"
+        exit 1
+    fi
+}
+
 select_random_wallpaper () {
     wallpaper=$(find $dir -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.svg" -o -iname "*.gif" \) -print | shuf -n 1)
 }
@@ -254,6 +273,8 @@ elif [ $link = "reddit" ] || [ ! -z $sub ]; then
 else
     unsplash
 fi
+
+type_check
 
 if [ $kde = true ]; then
     kde_cmd
