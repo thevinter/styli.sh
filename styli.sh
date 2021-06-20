@@ -236,11 +236,11 @@ pywal_cmd() {
     if [ $pywal -eq 1 ]; then
         wal -c
         wal -i ${wallpaper} -n -q
+        if [ $TERM = alacritty ]; then
+            alacritty_change
+        fi
     fi
     
-    if [ $TERM = alacritty ]; then
-        alacritty_change
-    fi
 }
 
 sway_cmd() {
