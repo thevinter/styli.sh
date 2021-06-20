@@ -233,12 +233,13 @@ select_random_wallpaper () {
 
 pywal_cmd() {
 
-    if [ $TERM = alacritty ]; then
-        alacritty_change
-    fi
     if [ $pywal -eq 1 ]; then
         wal -c
         wal -i ${wallpaper} -n -q
+    fi
+    
+    if [ $TERM = alacritty ]; then
+        alacritty_change
     fi
 }
 
