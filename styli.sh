@@ -129,11 +129,11 @@ reddit(){
 
     sort=$2
     top_time=$3
-    if [ -z $sort    ]; then
+    if [ -z $sort ]; then
         sort="hot"
     fi
 
-    if [ -z $top_time    ]; then
+    if [ -z $top_time ]; then
         top_time=""
     fi
 
@@ -214,7 +214,7 @@ type_check() {
 
     for requiredType in "${mime_types[@]}"
     do
-        imageType=$(file --mime-type	${wallpaper} | awk '{print $2}')
+        imageType=$(file --mime-type ${wallpaper} | awk '{print $2}')
         if [ "$requiredType" = "$imageType" ]; then
             isType=true
             break
@@ -243,14 +243,14 @@ pywal_cmd() {
 }
 
 sway_cmd() {
-    if [ ! -z $bgtype  ]; then
+    if [ ! -z $bgtype ]; then
         if [ $bgtype == 'bg-center'  ]; then
             mode="center"
         fi
-        if [ $bgtype == 'bg-fill'  ]; then
+        if [ $bgtype == 'bg-fill' ]; then
             mode="fill"
         fi
-        if [ $bgtype == 'bg-max'	]; then
+        if [ $bgtype == 'bg-max' ]; then
             mode="fit"
         fi
         if [ $bgtype == 'bg-scale'	]; then
@@ -313,7 +313,7 @@ xfce_cmd() {
     activeOutput=$(xrandr | grep -e " connected [^(]" | sed -e "s/\([A-Z0-9]\+\) connected.*/\1/")
     connected=$(echo $connectedOutputs | wc -w)
 
-    xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/image-path -n -t string -s	~/Pictures/1.jpeg
+    xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/image-path -n -t string -s ~/Pictures/1.jpeg
     xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitorLVDS1/workspace0/last-image -n -t string -s  ~/Pictures/1.jpeg
 
     for i in $(xfconf-query -c xfce4-desktop -p /backdrop -l|egrep -e "screen.*/monitor.*image-path$" -e "screen.*/monitor.*/last-image$"); do
@@ -375,21 +375,21 @@ fi
 while :
 do
     case "${1}" in
-        -b | --fehbg)    	bgtype=${2} ; shift 2 ;;
+        -b | --fehbg)     bgtype=${2} ; shift 2 ;;
         -s | --search)    search=${2} ; shift 2 ;;
         -h | --height)    height=${2} ; shift 2 ;;
-        -w | --width)    	width=${2} ; shift 2 ;;
-        -l | --link)    	link=${2} ; shift 2 ;;
+        -w | --width)     width=${2} ; shift 2 ;;
+        -l | --link)      link=${2} ; shift 2 ;;
         -r | --subreddit) sub=${2} ; shift 2 ;;
         -c | --fehopt)    custom=${2} ; shift 2 ;;
-        -m | --monitors)	monitors=${2} ; shift 2 ;;
-        -n | --nitrogen)	nitrogen=true ; shift ;;
+        -m | --monitors)  monitors=${2} ; shift 2 ;;
+        -n | --nitrogen)  nitrogen=true ; shift ;;
         -d | --directory) dir=${2} ; shift 2 ;;
         -p | --termcolor) pywal=1 ; shift ;;
-        -k | --kde)    	kde=true ; shift ;;
-        -x | --xfce)    	xfce=true ; shift ;;
-        -g | --gnome)    gnome=true ; shift ;;
-        -y | --sway)    	sway=true ; shift ;;
+        -k | --kde)       kde=true ; shift ;;
+        -x | --xfce)      xfce=true ; shift ;;
+        -g | --gnome)     gnome=true ; shift ;;
+        -y | --sway)      sway=true ; shift ;;
         -- | '') shift; break ;;
         *) echo "Unexpected option: $1 - this should not happen." ; usage ;;
     esac
@@ -416,7 +416,7 @@ elif [ $nitrogen = true ]; then
 elif [ $sway = true ]; then
     sway_cmd
 else
-   		feh_cmd
+    feh_cmd
 fi
 
 
