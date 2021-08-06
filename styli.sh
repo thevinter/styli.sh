@@ -325,6 +325,7 @@ xfce_cmd() {
 
 gnome_cmd() {
     gsettings set org.gnome.desktop.background picture-uri "file://${wallpaper}"
+    gsettings set org.gnome.desktop.background picture-options "scaled"
 }
 
 feh_cmd() {
