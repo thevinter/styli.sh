@@ -189,12 +189,35 @@ unsplash() {
     wget -q -O ${wallpaper} $link
 }
 
+deviantart(){
+    client_id=16531
+    client_secret=68c00f3d0ceab95b0fac638b33a3368e
+    payload="grant_type=client_credentials&client_id=${client_id}&client_secret=${client_secret}"
+    access_token=`curl -k -X POST "https://www.deviantart.com/oauth2/token"  "content-type: application/x-www-form-urlencoded" -d $payload | jq -r '.access_token'`
+    #url="https://www.deviantart.com/api/v1/oauth2/browse/popular?q=$search"
+    if [ ! -z $1 ]; then
+        artist=$1
+        url="https://www.deviantart.com/api/v1/oauth2/gallery/?username=${artist}&mode=popular&limit=24"
+    else
+        url="https://www.deviantart.com/api/v1/oauth2/browse/hot"
+    fi
+    
+    content=`curl -H "Authorization: Bearer ${access_token}" -H "Accept: application/json" -H "Content-Type: application/json" $url`   
+    urls=$(echo -n $content | jq -r '.results[].content.src')
+    arrURLS=($urls)
+    size=${#arrURLS[@]}
+    idx=$(($RANDOM % $size))
+    target_url=${arrURLS[$idx]}
+    wget --no-check-certificate -q -P down -O ${wallpaper} $target_url &>/dev/null
+}
+
 usage(){
     echo "Usage: styli.sh [-s | --search <string>]
     [-h | --height <height>]
     [-w | --width <width>]
     [-b | --fehbg <feh bg opt>]
     [-c | --fehopt <feh opt>]
+    [-da | --deviantart <artist>]
     [-r | --subreddit <subreddit>]
     [-l | --link <source>]
     [-p | --termcolor]
@@ -366,7 +389,7 @@ nitrogen=false
 sway=false
 monitors=1
 
-PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:c:d:m:pknxgy --long search:,height:,width:,fehbg:,fehopt:,subreddit:,directory:,monitors:,termcolor:,kde,nitrogen,xfce,gnome,sway -- "$@")
+PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:da:c:d:m:pknxgy --long search:,height:,width:,fehbg:,fehopt:,deviantart:,subreddit:,directory:,monitors:,termcolor:,kde,nitrogen,xfce,gnome,sway -- "$@")
 
 VALID_ARGUMENTS=$?
 if [ "$VALID_ARGUMENTS" != "0" ]; then
@@ -382,6 +405,7 @@ do
         -w | --width)     width=${2} ; shift 2 ;;
         -l | --link)      link=${2} ; shift 2 ;;
         -r | --subreddit) sub=${2} ; shift 2 ;;
+        -da | --deviantart) artist=${2} ; shift 2 ;;
         -c | --fehopt)    custom=${2} ; shift 2 ;;
         -m | --monitors)  monitors=${2} ; shift 2 ;;
         -n | --nitrogen)  nitrogen=true ; shift ;;
@@ -400,6 +424,8 @@ if [ ! -z $dir ]; then
     select_random_wallpaper
 elif [ $link = "reddit" ] || [ ! -z $sub ]; then
     reddit "$sub"
+elif [ ! -z $artist ]; then
+    deviantart "$artist"
 else
     unsplash
 fi
