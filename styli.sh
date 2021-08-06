@@ -424,7 +424,7 @@ if [ ! -z $dir ]; then
     select_random_wallpaper
 elif [ $link = "reddit" ] || [ ! -z $sub ]; then
     reddit "$sub"
-elif [ ! -z $artist ]; then
+elif [ $link = "deviantart" ] || [ ! -z $artist ]; then
     deviantart "$artist"
 else
     unsplash
