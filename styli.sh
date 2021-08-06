@@ -194,10 +194,12 @@ deviantart(){
     client_secret=68c00f3d0ceab95b0fac638b33a3368e
     payload="grant_type=client_credentials&client_id=${client_id}&client_secret=${client_secret}"
     access_token=`curl -k -X POST "https://www.deviantart.com/oauth2/token"  "content-type: application/x-www-form-urlencoded" -d $payload | jq -r '.access_token'`
-    #url="https://www.deviantart.com/api/v1/oauth2/browse/popular?q=$search"
     if [ ! -z $1 ]; then
         artist=$1
         url="https://www.deviantart.com/api/v1/oauth2/gallery/?username=${artist}&mode=popular&limit=24"
+    elif [ ! -z $search ]; then
+        #url="https://www.deviantart.com/api/v1/oauth2/browse/tags?tag=${search}&limit=24"
+        url="https://www.deviantart.com/api/v1/oauth2/browse/popular?q=$search&limit=24"
     else
         url="https://www.deviantart.com/api/v1/oauth2/browse/hot"
     fi
