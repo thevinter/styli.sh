@@ -199,7 +199,7 @@ deviantart(){
         url="https://www.deviantart.com/api/v1/oauth2/gallery/?username=${artist}&mode=popular&limit=24"
     elif [ ! -z $search ]; then
         #url="https://www.deviantart.com/api/v1/oauth2/browse/tags?tag=${search}&limit=24"
-        url="https://www.deviantart.com/api/v1/oauth2/browse/popular?q=$search&limit=24"
+        url="https://www.deviantart.com/api/v1/oauth2/browse/popular?q=$search&limit=24&timerange=1month"
     else
         url="https://www.deviantart.com/api/v1/oauth2/browse/hot"
     fi
