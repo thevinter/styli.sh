@@ -201,7 +201,11 @@ deviantart(){
         #url="https://www.deviantart.com/api/v1/oauth2/browse/tags?tag=${search}&limit=24"
         url="https://www.deviantart.com/api/v1/oauth2/browse/popular?q=$search&limit=24&timerange=1month"
     else
-        url="https://www.deviantart.com/api/v1/oauth2/browse/hot"
+        #url="https://www.deviantart.com/api/v1/oauth2/browse/hot"
+        topics=( "adoptables" "artisan-crafts" "anthro" "comics" "drawings-and-paintings" "fan-art" "poetry" "stock-images" "sculpture" "science-fiction" "traditional-art" "street-photography" "street-art" "pixel-art" "wallpaper" "digital-art" "photo-manipulation" "science-fiction" "fractal" "game-art" "fantasy" "3d" "drawings-and-paintings" "game-art" )
+        rand=$[$RANDOM % ${#topics[@]}]
+        echo ${topics[$rand]}
+        url="https://www.deviantart.com/api/v1/oauth2/browse/topic?limit=24&topic=${topics[$rand]}&with_session=false&mature_content=true"
     fi
     
     content=`curl -H "Authorization: Bearer ${access_token}" -H "Accept: application/json" -H "Content-Type: application/json" $url`   
