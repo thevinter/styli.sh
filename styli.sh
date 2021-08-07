@@ -198,13 +198,13 @@ deviantart(){
         artist=$1
         url="https://www.deviantart.com/api/v1/oauth2/gallery/?username=${artist}&mode=popular&limit=24"
     elif [ ! -z $search ]; then
-        #url="https://www.deviantart.com/api/v1/oauth2/browse/tags?tag=${search}&limit=24"
         url="https://www.deviantart.com/api/v1/oauth2/browse/popular?q=$search&limit=24&timerange=1month"
     else
-        #url="https://www.deviantart.com/api/v1/oauth2/browse/hot"
+        #offset=$((RANDOM%10))
+        #url="https://www.deviantart.com/api/v1/oauth2/browse/hot?limit=24&offset=${offset}"
         topics=( "adoptables" "artisan-crafts" "anthro" "comics" "drawings-and-paintings" "fan-art" "poetry" "stock-images" "sculpture" "science-fiction" "traditional-art" "street-photography" "street-art" "pixel-art" "wallpaper" "digital-art" "photo-manipulation" "science-fiction" "fractal" "game-art" "fantasy" "3d" "drawings-and-paintings" "game-art" )
         rand=$[$RANDOM % ${#topics[@]}]
-        url="https://www.deviantart.com/api/v1/oauth2/browse/topic?limit=24&topic=${topics[$rand]}&with_session=false&mature_content=true"
+        url="https://www.deviantart.com/api/v1/oauth2/browse/topic?limit=24&topic=${topics[$rand]}"
     fi
     
     content=`curl -H "Authorization: Bearer ${access_token}" -H "Accept: application/json" -H "Content-Type: application/json" $url`   
@@ -222,7 +222,7 @@ usage(){
     [-w | --width <width>]
     [-b | --fehbg <feh bg opt>]
     [-c | --fehopt <feh opt>]
-    [-da | --deviantart <artist>]
+    [-a | --artist <deviant artist>]
     [-r | --subreddit <subreddit>]
     [-l | --link <source>]
     [-p | --termcolor]
@@ -394,7 +394,7 @@ nitrogen=false
 sway=false
 monitors=1
 
-PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:da:c:d:m:pknxgy --long search:,height:,width:,fehbg:,fehopt:,deviantart:,subreddit:,directory:,monitors:,termcolor:,kde,nitrogen,xfce,gnome,sway -- "$@")
+PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:a:c:d:m:pknxgy --long search:,height:,width:,fehbg:,fehopt:,artist:,subreddit:,directory:,monitors:,termcolor:,kde,nitrogen,xfce,gnome,sway -- "$@")
 
 VALID_ARGUMENTS=$?
 if [ "$VALID_ARGUMENTS" != "0" ]; then
@@ -410,7 +410,7 @@ do
         -w | --width)     width=${2} ; shift 2 ;;
         -l | --link)      link=${2} ; shift 2 ;;
         -r | --subreddit) sub=${2} ; shift 2 ;;
-        -da | --deviantart) artist=${2} ; shift 2 ;;
+        -a | --artist) artist=${2} ; shift 2 ;;
         -c | --fehopt)    custom=${2} ; shift 2 ;;
         -m | --monitors)  monitors=${2} ; shift 2 ;;
         -n | --nitrogen)  nitrogen=true ; shift ;;
