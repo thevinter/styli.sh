@@ -193,31 +193,30 @@ deviantart(){
 client_id=16531
 client_secret=68c00f3d0ceab95b0fac638b33a3368e
 payload="grant_type=client_credentials&client_id=${client_id}&client_secret=${client_secret}"
-access_token=`curl -k -X POST "https://www.deviantart.com/oauth2/token"  "content-type: application/x-www-form-urlencoded" -d $payload | jq -r '.access_token'`
+access_token=`curl --silent -d $payload https://www.deviantart.com/oauth2/token | jq -r '.access_token'`
 if [ ! -z $1 ]; then
     artist=$1
     url="https://www.deviantart.com/api/v1/oauth2/gallery/?username=${artist}&mode=popular&limit=24"
-    elif [ ! -z $search ]; then
-        [[ "$search" =~ ^(tag:)(.*)$ ]] && tag=${BASH_REMATCH[2]}
-        if [ ! -z $tag ]; then
-            url="https://www.deviantart.com/api/v1/oauth2/browse/tags?tag=$tag&offset=${RANDOM:0:2}&limit=24"
-        else
-            url="https://www.deviantart.com/api/v1/oauth2/browse/popular?q=$search&limit=24&timerange=1month"
-        fi
+elif [ ! -z $search ]; then
+    [[ "$search" =~ ^(tag:)(.*)$ ]] && tag=${BASH_REMATCH[2]}
+    if [ ! -z $tag ]; then
+        url="https://www.deviantart.com/api/v1/oauth2/browse/tags?tag=$tag&offset=${RANDOM:0:2}&limit=24"
     else
-        #url="https://www.deviantart.com/api/v1/oauth2/browse/hot?limit=24&offset=${offset}"
-        topics=( "adoptables" "artisan-crafts" "anthro" "comics" "drawings-and-paintings" "fan-art" "poetry" "stock-images" "sculpture" "science-fiction" "traditional-art" "street-photography" "street-art" "pixel-art" "wallpaper" "digital-art" "photo-manipulation" "science-fiction" "fractal" "game-art" "fantasy" "3d" "drawings-and-paintings" "game-art" )
-        rand=$[$RANDOM % ${#topics[@]}]
-        url="https://www.deviantart.com/api/v1/oauth2/browse/topic?limit=24&topic=${topics[$rand]}"
+        url="https://www.deviantart.com/api/v1/oauth2/browse/popular?q=$search&limit=24&timerange=1month"
     fi
-    
-    content=`curl -H "Authorization: Bearer ${access_token}" -H "Accept: application/json" -H "Content-Type: application/json" $url`
-    urls=$(echo -n $content | jq -r '.results[].content.src')
-    arrURLS=($urls)
-    size=${#arrURLS[@]}
-    idx=$(($RANDOM % $size))
-    target_url=${arrURLS[$idx]}
-    wget --no-check-certificate -q -P down -O ${wallpaper} $target_url &>/dev/null
+else
+    #url="https://www.deviantart.com/api/v1/oauth2/browse/hot?limit=24&offset=${offset}"
+    topics=( "adoptables" "artisan-crafts" "anthro" "comics" "drawings-and-paintings" "fan-art" "poetry" "stock-images" "sculpture" "science-fiction" "traditional-art" "street-photography" "street-art" "pixel-art" "wallpaper" "digital-art" "photo-manipulation" "science-fiction" "fractal" "game-art" "fantasy" "3d" "drawings-and-paintings" "game-art" )
+    rand=$[$RANDOM % ${#topics[@]}]
+    url="https://www.deviantart.com/api/v1/oauth2/browse/topic?limit=24&topic=${topics[$rand]}"
+fi
+content=`curl --silent -H "Authorization: Bearer ${access_token}" -H "Accept: application/json" -H "Content-Type: application/json" $url`
+urls=$(echo -n $content | jq -r '.results[].content.src')
+arrURLS=($urls)
+size=${#arrURLS[@]}
+idx=$(($RANDOM % $size))
+target_url=${arrURLS[$idx]}
+wget --no-check-certificate -q -P down -O ${wallpaper} $target_url &>/dev/null
 }
 
 usage(){
