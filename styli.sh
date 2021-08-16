@@ -175,28 +175,28 @@ wget -T $timeout -U "$useragent" --no-check-certificate -q -P down -O ${wallpape
 }
 
 unsplash() {
-local search="${search// /_}"
-if [ ! -z $height ] || [ ! -z $width ]; then
-    link="${link}${width}x${height}";
-else
-    link="${link}1920x1080";
-fi
-
-if [ ! -z $search ]; then
-    link="${link}/?${search}"
-fi
-
-wget -q -O ${wallpaper} $link
+    local search="${search// /_}"
+    if [ ! -z $height ] || [ ! -z $width ]; then
+        link="${link}${width}x${height}";
+    else
+        link="${link}1920x1080";
+    fi
+    
+    if [ ! -z $search ]; then
+        link="${link}/?${search}"
+    fi
+    
+    wget -q -O ${wallpaper} $link
 }
 
 deviantart(){
-client_id=16531
-client_secret=68c00f3d0ceab95b0fac638b33a3368e
-payload="grant_type=client_credentials&client_id=${client_id}&client_secret=${client_secret}"
-access_token=`curl -k -X POST "https://www.deviantart.com/oauth2/token"  "content-type: application/x-www-form-urlencoded" -d $payload | jq -r '.access_token'`
-if [ ! -z $1 ]; then
-    artist=$1
-    url="https://www.deviantart.com/api/v1/oauth2/gallery/?username=${artist}&mode=popular&limit=24"
+    client_id=16531
+    client_secret=68c00f3d0ceab95b0fac638b33a3368e
+    payload="grant_type=client_credentials&client_id=${client_id}&client_secret=${client_secret}"
+    access_token=`curl --silent -d $payload https://www.deviantart.com/oauth2/token | jq -r '.access_token'`
+    if [ ! -z $1 ]; then
+        artist=$1
+        url="https://www.deviantart.com/api/v1/oauth2/gallery/?username=${artist}&mode=popular&limit=24"
     elif [ ! -z $search ]; then
         [[ "$search" =~ ^(tag:)(.*)$ ]] && tag=${BASH_REMATCH[2]}
         if [ ! -z $tag ]; then
@@ -210,8 +210,7 @@ if [ ! -z $1 ]; then
         rand=$[$RANDOM % ${#topics[@]}]
         url="https://www.deviantart.com/api/v1/oauth2/browse/topic?limit=24&topic=${topics[$rand]}"
     fi
-    
-    content=`curl -H "Authorization: Bearer ${access_token}" -H "Accept: application/json" -H "Content-Type: application/json" $url`
+    content=`curl --silent -H "Authorization: Bearer ${access_token}" -H "Accept: application/json" -H "Content-Type: application/json" $url`
     urls=$(echo -n $content | jq -r '.results[].content.src')
     arrURLS=($urls)
     size=${#arrURLS[@]}
@@ -431,9 +430,9 @@ done
 
 if [ ! -z $dir ]; then
     select_random_wallpaper
-    elif [ $link = "reddit" ] || [ ! -z $sub ]; then
+elif [ $link = "reddit" ] || [ ! -z $sub ]; then
     reddit "$sub"
-    elif [ $link = "deviantart" ] || [ ! -z $artist ]; then
+elif [ $link = "deviantart" ] || [ ! -z $artist ]; then
     deviantart "$artist"
 else
     unsplash
@@ -443,13 +442,13 @@ type_check
 
 if [ $kde = true ]; then
     kde_cmd
-    elif [ $xfce = true ]; then
+elif [ $xfce = true ]; then
     xfce_cmd
-    elif [ $gnome = true ]; then
+elif [ $gnome = true ]; then
     gnome_cmd
-    elif [ $nitrogen = true ]; then
+elif [ $nitrogen = true ]; then
     nitrogen_cmd
-    elif [ $sway = true ]; then
+elif [ $sway = true ]; then
     sway_cmd
 else
     feh_cmd
