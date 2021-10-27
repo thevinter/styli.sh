@@ -272,6 +272,14 @@ pywal_cmd() {
         fi
     fi
     
+    if [ $light -eq 1 ]; then
+        wal -c
+        wal -i ${wallpaper} -n -q -l-
+        if [ $TERM = alacritty ]; then
+            alacritty_change
+        fi
+    fi
+    
 }
 
 sway_cmd() {
@@ -390,6 +398,7 @@ feh_cmd() {
 }
 
 pywal=0
+light=0
 kde=false
 xfce=false
 gnome=false
@@ -419,6 +428,7 @@ do
         -n | --nitrogen)  nitrogen=true ; shift ;;
         -d | --directory) dir=${2} ; shift 2 ;;
         -p | --termcolor) pywal=1 ; shift ;;
+        -l | --lightwal   light=1 ; shift ;;
         -k | --kde)       kde=true ; shift ;;
         -x | --xfce)      xfce=true ; shift ;;
         -g | --gnome)     gnome=true ; shift ;;
