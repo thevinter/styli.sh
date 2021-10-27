@@ -274,7 +274,7 @@ pywal_cmd() {
     
     if [ $light -eq 1 ]; then
         wal -c
-        wal -i ${wallpaper} -n -q -l-
+        wal -i ${wallpaper} -n -q -l
         if [ $TERM = alacritty ]; then
             alacritty_change
         fi
