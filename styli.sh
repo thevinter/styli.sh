@@ -428,7 +428,7 @@ do
         -n | --nitrogen)  nitrogen=true ; shift ;;
         -d | --directory) dir=${2} ; shift 2 ;;
         -p | --termcolor) pywal=1 ; shift ;;
-        -l | --lightwal)  light=1 ; shift ;;
+        -L | --lightwal)  light=1 ; shift ;;
         -k | --kde)       kde=true ; shift ;;
         -x | --xfce)      xfce=true ; shift ;;
         -g | --gnome)     gnome=true ; shift ;;
