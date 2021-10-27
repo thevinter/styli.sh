@@ -229,6 +229,7 @@ usage(){
     [-r | --subreddit <subreddit>]
     [-l | --link <source>]
     [-p | --termcolor]
+    [-L | --lightwal]
     [-d | --directory]
     [-k | --kde]
     [-x | --xfce]
@@ -406,7 +407,7 @@ nitrogen=false
 sway=false
 monitors=1
 
-PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:a:c:d:m:pknxgy --long search:,height:,width:,fehbg:,fehopt:,artist:,subreddit:,directory:,monitors:,termcolor:,kde,nitrogen,xfce,gnome,sway -- "$@")
+PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:a:c:d:m:pLknxgy --long search:,height:,width:,fehbg:,fehopt:,artist:,subreddit:,directory:,monitors:,termcolor:,lighwal:,kde,nitrogen,xfce,gnome,sway -- "$@")
 
 VALID_ARGUMENTS=$?
 if [ "$VALID_ARGUMENTS" != "0" ]; then
