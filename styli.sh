@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-link="https://source.unsplash.com/random/"
+link="https://source.unsplash.com/random/1920x1080"
 
 if [ -z ${XDG_CONFIG_HOME+x} ]; then
     XDG_CONFIG_HOME="${HOME}/.config"
@@ -17,6 +17,10 @@ if [ ! -d "${cachedir}" ]; then
 fi
 
 wallpaper="${cachedir}/wallpaper.jpg"
+
+save_cmd(){
+    cp "${wallpaper}" "${HOME}/Pictures/wallpaper${RANDOM}.jpg"
+}
 
 die() {
     printf "ERR: %s\n" "$1" >&2
@@ -236,6 +240,7 @@ usage(){
     [-g | --gnome]
     [-m | --monitors <monitor count (nitrogen)>]
     [-n | --nitrogen]
+    [-sa | --save]    <Save current image to pictures directory>
     "
     exit 2
 }
@@ -407,7 +412,7 @@ nitrogen=false
 sway=false
 monitors=1
 
-PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:a:c:d:m:pLknxgy --long search:,height:,width:,fehbg:,fehopt:,artist:,subreddit:,directory:,monitors:,termcolor:,lighwal:,kde,nitrogen,xfce,gnome,sway -- "$@")
+PARSED_ARGUMENTS=$(getopt -a -n $0 -o h:w:s:l:b:r:a:c:d:m:pLknxgy:sa --long search:,height:,width:,fehbg:,fehopt:,artist:,subreddit:,directory:,monitors:,termcolor:,lighwal:,kde,nitrogen,xfce,gnome,sway,save -- "$@")
 
 VALID_ARGUMENTS=$?
 if [ "$VALID_ARGUMENTS" != "0" ]; then
@@ -419,6 +424,7 @@ do
     case "${1}" in
         -b | --fehbg)     bgtype=${2} ; shift 2 ;;
         -s | --search)    search=${2} ; shift 2 ;;
+        -sa | --save)    save=true ; shift ;;
         -h | --height)    height=${2} ; shift 2 ;;
         -w | --width)     width=${2} ; shift 2 ;;
         -l | --link)      link=${2} ; shift 2 ;;
@@ -445,6 +451,8 @@ elif [ $link = "reddit" ] || [ ! -z $sub ]; then
     reddit "$sub"
 elif [ $link = "deviantart" ] || [ ! -z $artist ]; then
     deviantart "$artist"
+elif [ $save = true ]; then
+    save_cmd
 else
     unsplash
 fi
