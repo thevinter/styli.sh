@@ -451,7 +451,7 @@ elif [ $link = "reddit" ] || [ ! -z $sub ]; then
     reddit "$sub"
 elif [ $link = "deviantart" ] || [ ! -z $artist ]; then
     deviantart "$artist"
-elif [ $save = true ]; then
+elif [ ! -z $save ]; then
     save_cmd
 else
     unsplash
