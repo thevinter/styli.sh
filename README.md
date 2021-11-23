@@ -22,6 +22,9 @@ cd styli.sh
 # To set a random 1920x1080 background
 $ ./styli.sh
 
+# Save the current image to ~/Pictures directory
+$ ./styli.sh -sa
+
 # To specify a desired width or height
 $ ./styli.sh -w 1080 -h 720
 $ ./styli.sh -w 2560
