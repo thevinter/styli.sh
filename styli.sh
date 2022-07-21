@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2120,SC1090,SC2154,SC2034
+# SC2120: foo references arguments, but none are ever passed.
+# SC1090: Can't follow non-constant source. Use a directive to specify location.
+# SC2154: var is referenced but not assigned.
+# SC2034: foo appears unused. Verify it or export it.
+
 
 LINK="https://source.unsplash.com/random/"
 
