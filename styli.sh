@@ -175,7 +175,7 @@ reddit() {
     # TARGET_NAME, TARGET_ID, EXT and NEWNAME are not used
     # mapfile -t IDS <<<"$(echo -n "$CONTENT" | jq -r '.data.children[]|select(.data.post_hint|test("image")?) | .data.id')"
     # mapfile -t NAMES <<<"$(echo -n "$CONTENT" | jq -r '.data.children[]|select(.data.post_hint|test("image")?) | .data.title')"
-    # TARGET_URL=${URLS[$IDX]}
+    TARGET_URL=${URLS[$IDX]}
     # TARGET_NAME=${NAMES[$IDX]}
     # TARGET_ID=${IDS[$IDX]}
     # EXT=$(echo -n "${TARGET_URL##*.}" | cut -d '?' -f 1)
