@@ -155,7 +155,7 @@ reddit() {
             echo "Please install the subreddits file in $CONFDIR"
             exit 2
         fi
-        mapfile -t SUBREDDITS <<<"$CONFDIR/subreddits"
+        mapfile -t SUBREDDITS <"$CONFDIR/subreddits"
         a=${#SUBREDDITS[@]}
         b=$((RANDOM % a))
         SUB=${SUBREDDITS[$b]}
@@ -378,7 +378,7 @@ gnome_cmd() {
 
 feh_cmd() {
     local FEH
-    FEH=$(feh)
+    FEH=(feh)
     if [ -n "$BGTYPE" ]; then
         if [ "$BGTYPE" == 'bg-center' ]; then
             FEH+=(--bg-center)
