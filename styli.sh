@@ -184,7 +184,7 @@ reddit() {
 }
 
 unsplash() {
-    local SEARCH="${SEARCH// /_}"
+    local SEARCH="${SEARCH// /+}"
     if [ -n "$HEIGHT" ] || [ -n "$WIDTH" ]; then
         LINK="${LINK}${WIDTH}x${HEIGHT}" # dont remove {} from variables
     else
