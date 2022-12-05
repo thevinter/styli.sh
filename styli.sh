@@ -365,7 +365,7 @@ xfce_cmd() {
     xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/image-path -n -t string -s ~/Pictures/1.jpeg
     xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitorLVDS1/workspace0/last-image -n -t string -s ~/Pictures/1.jpeg
 
-    for i in $(xfconf-query -c xfce4-desktop -p /backdrop -l | grep -E "screen.*/monitor.*image-path$" -e "screen.*/monitor.*/last-image$"); do
+    for i in $(xfconf-query -c xfce4-desktop -p /backdrop -l | grep -E -e "screen.*/monitor.*image-path$" -e "screen.*/monitor.*/last-image$"); do
         xfconf-query -c xfce4-desktop -p "$i" -n -t string -s "$WALLPAPER"
         xfconf-query -c xfce4-desktop -p "$i" -s "$WALLPAPER"
     done
