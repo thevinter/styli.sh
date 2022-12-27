@@ -24,6 +24,8 @@ if [ ! -d "$CACHEDIR" ]; then
 fi
 
 WALLPAPER="$CACHEDIR/wallpaper.jpg"
+TEMP_WALL="$CACHEDIR/temp.jpg"
+
 
 save_cmd() {
     cp "$WALLPAPER" "$HOME/Pictures/wallpaper$RANDOM.jpg"
@@ -32,6 +34,34 @@ save_cmd() {
 die() {
     printf "ERR: %s\n" "$1" >&2
     exit 1
+}
+
+type_check() {
+    MIME_TYPES=("image/bmp" "image/jpeg" "image/gif" "image/png" "image/heic")
+    ISTYPE=false
+
+    for REQUIREDTYPE in "${MIME_TYPES[@]}"; do
+        IMAGETYPE=$(file --mime-type "$WALLPAPER" | awk '{print $2}')
+        if [[ "$REQUIREDTYPE" =~ $IMAGETYPE ]]; then
+            ISTYPE=true
+            break
+        fi
+    done
+
+    if [ $ISTYPE = false ]; then
+        echo "MIME-Type missmatch. Downloaded file is not an image!"
+        exit 1
+    else
+        cp "$TEMP_WALL" "$WALLPAPER"
+    fi
+}
+
+putup_wallpaer() {
+    USERAGENT="thevinter"
+    TIMEOUT=60
+    wget --timeout="$TIMEOUT" --user-agent="$USERAGENT" --no-check-certificate --quiet --output-document="$TEMP_WALL" "$TARGET_URL"
+    type_check
+    # de_check
 }
 
 # https://github.com/egeesin/alacritty-color-export
@@ -135,19 +165,6 @@ EOP
 }
 
 reddit() {
-    USERAGENT="thevinter"
-    TIMEOUT=60
-
-    SORT="$2"
-    TOP_TIME="$3"
-    if [ -z "$SORT" ]; then
-        SORT="hot"
-    fi
-
-    if [ -z "$TOP_TIME" ]; then
-        TOP_TIME=""
-    fi
-
     if [ -n "$1" ]; then
         SUB="$1"
     else
@@ -160,6 +177,16 @@ reddit() {
         b=$((RANDOM % a))
         SUB=${SUBREDDITS[$b]}
         SUB="$(echo -e "$SUB" | tr -d '[:space:]')"
+    fi
+
+    SORT="$2"
+    TOP_TIME="$3"
+    if [ -z "$SORT" ]; then
+        SORT="hot"
+    fi
+
+    if [ -z "$TOP_TIME" ]; then
+        TOP_TIME=""
     fi
 
     URL="https://www.reddit.com/r/$SUB/$SORT/.json?raw_json=1&t=$TOP_TIME"
@@ -180,22 +207,23 @@ reddit() {
     # TARGET_ID=${IDS[$IDX]}
     # EXT=$(echo -n "${TARGET_URL##*.}" | cut -d '?' -f 1)
     # NEWNAME=$(echo "$TARGET_NAME" | sed "s/^\///;s/\// /g")_"$SUBREDDIT"_$TARGET_ID.$EXT
-    wget -T $TIMEOUT -U "$USERAGENT" --no-check-certificate -q -P down -O "$WALLPAPER" "$TARGET_URL" &>/dev/null
+    # wget -T $TIMEOUT -U "$USERAGENT" --no-check-certificate -q -P down -O "$WALLPAPER" "$TARGET_URL" &>/dev/null
+    putup_wallpaer
 }
 
 unsplash() {
     local SEARCH="${SEARCH// /+}"
     if [ -n "$HEIGHT" ] || [ -n "$WIDTH" ]; then
-        LINK="${LINK}${WIDTH}x${HEIGHT}" # dont remove {} from variables
+        TARGET_URL="${LINK}${WIDTH}x${HEIGHT}" # dont remove {} from variables
     else
-        LINK="${LINK}1920x1080"
+        TARGET_URL="${LINK}1920x1080"
     fi
 
     if [ -n "$SEARCH" ]; then
-        LINK="${LINK}/?${SEARCH}"
+        TARGET_URL="${LINK}/?${SEARCH}"
     fi
-
-    wget -q -O "$WALLPAPER" "$LINK"
+    # wget -q -O "$WALLPAPER" "$LINK"
+    putup_wallpaer
 }
 
 deviantart() {
@@ -224,7 +252,8 @@ deviantart() {
     SIZE=${#URLS[@]}
     IDX=$((RANDOM % SIZE))
     TARGET_URL=${ARRURLS[$IDX]}
-    wget --no-check-certificate -q -P down -O "$WALLPAPER" "$TARGET_URL" &>/dev/null
+    # wget --no-check-certificate -q -P down -O "$WALLPAPER" "$TARGET_URL" &>/dev/null
+    putup_wallpaer
 }
 
 usage() {
@@ -247,24 +276,6 @@ usage() {
     [-sa | --save]    <Save current image to pictures directory>
     "
     exit 2
-}
-
-type_check() {
-    MIME_TYPES=("image/bmp" "image/jpeg" "image/gif" "image/png" "image/heic")
-    ISTYPE=false
-
-    for REQUIREDTYPE in "${MIME_TYPES[@]}"; do
-        IMAGETYPE=$(file --mime-type "$WALLPAPER" | awk '{print $2}')
-        if [ "$REQUIREDTYPE" = "$IMAGETYPE" ]; then
-            ISTYPE=true
-            break
-        fi
-    done
-
-    if [ $ISTYPE = false ]; then
-        echo "MIME-Type missmatch. Downloaded file is not an image!"
-        exit 1
-    fi
 }
 
 select_random_wallpaper() {
@@ -408,13 +419,13 @@ feh_cmd() {
     "${FEH[@]}"
 }
 
-PYWAL=0
-LIGHT=0
-KDE=false
-XFCE=false
-GNOME=false
-NITROGEN=false
-SWAY=false
+# PYWAL=0
+# LIGHT=0
+# KDE=false
+# XFCE=false
+# GNOME=false
+# NITROGEN=false
+# SWAY=false
 MONITORS=1
 # SC2034
 PARSED_ARGUMENTS=$(getopt -a -n "$0" -o h:w:s:l:b:r:a:c:d:m:pLknxgy:sa --long search:,height:,width:,fehbg:,fehopt:,artist:,subreddit:,directory:,monitors:,termcolor:,lighwal:,kde,nitrogen,xfce,gnome,sway,save -- "$@")
@@ -424,117 +435,162 @@ if [ "$VALID_ARGUMENTS" != "0" ]; then
     usage
     exit
 fi
-while :; do
-    case "${1}" in
-    -b | --fehbg)
-        BGTYPE=${2}
-        shift 2
-        ;;
-    -s | --search)
-        SEARCH=${2}
-        shift 2
-        ;;
-    -sa | --save)
-        SAVE=true
-        shift
-        ;;
-    -h | --height)
-        HEIGHT=${2}
-        shift 2
-        ;;
-    -w | --width)
-        WIDTH=${2}
-        shift 2
-        ;;
-    -l | --link)
-        LINK=${2}
-        shift 2
-        ;;
-    -r | --subreddit)
-        SUB=${2}
-        shift 2
-        ;;
-    -a | --artist)
-        ARTIST=${2}
-        shift 2
-        ;;
-    -c | --fehopt)
-        CUSTOM=${2}
-        shift 2
-        ;;
-    -m | --monitors)
-        MONITORS=${2}
-        shift 2
-        ;;
-    -n | --nitrogen)
-        NITROGEN=true
-        shift
-        ;;
-    -d | --directory)
-        DIR=${2}
-        shift 2
-        ;;
-    -p | --termcolor)
-        PYWAL=1
-        shift
-        ;;
-    -L | --lightwal)
-        LIGHT=1
-        shift
-        ;;
-    -k | --kde)
-        KDE=true
-        shift
-        ;;
-    -x | --xfce)
-        XFCE=true
-        shift
-        ;;
-    -g | --gnome)
-        GNOME=true
-        shift
-        ;;
-    -y | --sway)
-        SWAY=true
-        shift
-        ;;
-    -- | '')
-        shift
-        break
-        ;;
-    *)
-        echo "Unexpected option: $1 - this should not happen."
-        usage
-        ;;
-    esac
-done
-
-if [ -n "$DIR" ]; then
-    select_random_wallpaper
-elif [ "$LINK" = "reddit" ] || [ -n "$SUB" ]; then
-    reddit "$SUB"
-elif [ "$LINK" = "deviantart" ] || [ -n "$ARTIST" ]; then
-    deviantart "$ARTIST"
-elif [ -n "$SAVE" ]; then
-    save_cmd
+if wget --quiet --spider http://google.com; then
+    # echo "Internet connection is working"
+    while true; do
+        case "$1" in
+        -a | --artist)
+            ARTIST="$2"
+            # shift 2
+            deviantart "$ARTIST"
+            break
+            ;;
+        -b | --fehbg)
+            BGTYPE="$2"
+            # shift 2
+            feh_cmd "$BGTYPE"
+            break
+            ;;
+        -c | --fehopt)
+            CUSTOM="$2"
+            feh_cmd "$CUSTOM"
+            break
+            # shift 2
+            ;;
+        -d | --directory)
+            # DIR=${2}
+            # shift 2
+            select_random_wallpaper "$2"
+            break
+            ;;
+        -g | --gnome)
+            # GNOME=true
+            # shift
+            gnome_cmd
+            break
+            ;;
+        -h | --height)
+            HEIGHT="$2"
+            # shift 2
+            unsplash "$HEIGHT"
+            # needed help on this one
+            break
+            ;;
+        -k | --kde)
+            # KDE=true
+            # shift
+            kde_cmd
+            break
+            ;;
+        -l | --link)
+            LINK="$2"
+            # shift 2
+            if [ "$LINK" = "reddit" ] || [ -n "$SUB" ]; then
+                reddit "$SUB"
+            elif [ "$LINK" = "deviantart" ] || [ -n "$ARTIST" ]; then
+                deviantart "$ARTIST"
+            fi
+            break
+            # needed help on this one
+            ;;
+        -L | --lightwal)
+            LIGHT="1"
+            pywal_cmd "$LIGHT"
+            break
+            # shift
+            ;;
+        -m | --monitors)
+            MONITORS="$2"
+            nitrogen_cmd "$MONITORS"
+            break
+            # shift 2
+            ;;
+        -n | --nitrogen)
+            # NITROGEN=true
+            # shift
+            nitrogen_cmd
+            ;;
+        -p | --termcolor)
+            PYWAL="1"
+            # shift
+            pywal_cmd "$PYWAL"
+            break
+            ;;
+        -r | --subreddit)
+            # SUB=${2}
+            # shift 2
+            reddit "$2"
+            break
+            ;;
+        -s | --search)
+            SEARCH="$2"
+            # shift 2
+            unsplash "$SEARCH"
+            break
+            ;;
+        -sa | --save)
+            # SAVE=true
+            # shift
+            save_cmd
+            break
+            ;;
+        -w | --width)
+            WIDTH="$2"
+            # shift 2
+            unsplash "$WIDTH"
+            break
+            ;;
+        -x | --xfce)
+            # XFCE=true
+            # shift
+            xfce_cmd
+            break
+            ;;
+        -y | --sway)
+            # SWAY=true
+            # shift
+            sway_cmd
+            break
+            ;;
+        -- | '')
+            shift
+            break
+            ;;
+        *)
+            echo "Unexpected option: $1 - this should not happen."
+            usage
+            ;;
+        esac
+    done
 else
-    unsplash
+    die "No internet connection."
 fi
+# if [ -n "$DIR" ]; then
+#     select_random_wallpaper
+# elif [ "$LINK" = "reddit" ] || [ -n "$SUB" ]; then
+#     reddit "$SUB"
+# elif [ "$LINK" = "deviantart" ] || [ -n "$ARTIST" ]; then
+#     deviantart "$ARTIST"
+# elif [ -n "$SAVE" ]; then
+#     save_cmd
+# else
+#     unsplash
+# fi
 
-type_check
+# type_check
 
-if [ "$KDE" = true ]; then
-    kde_cmd
-elif [ "$XFCE" = true ]; then
-    xfce_cmd
-elif [ "$GNOME" = true ]; then
-    gnome_cmd
-elif [ "$NITROGEN" = true ]; then
-    nitrogen_cmd
-elif [ "$SWAY" = true ]; then
-    sway_cmd
-else
-    feh_cmd >/dev/null 2>&1
-fi
+# if [ "$KDE" = true ]; then
+#     kde_cmd
+# elif [ "$XFCE" = true ]; then
+#     xfce_cmd
+# elif [ "$GNOME" = true ]; then
+#     gnome_cmd
+# elif [ "$NITROGEN" = true ]; then
+#     nitrogen_cmd
+# elif [ "$SWAY" = true ]; then
+#     sway_cmd
+# else
+#     feh_cmd >/dev/null 2>&1
+# fi
 
-pywal_cmd
+# pywal_cmd
