@@ -22,11 +22,16 @@ CACHEDIR="${XDG_CACHE_HOME}/styli.sh"
 if [ ! -d "$CACHEDIR" ]; then
     mkdir -p "$CACHEDIR"
 fi
+WPDIR="${STYLISH_WALLSDIR:-$HOME/Pictures}"
+if [ ! -d "$WPDIR" ]; then
+    mkdir -p "$WPDIR"
+fi
 
 WALLPAPER="$CACHEDIR/wallpaper.jpg"
 
+
 save_cmd() {
-    cp "$WALLPAPER" "$HOME/Pictures/wallpaper$RANDOM.jpg"
+    cp "$WALLPAPER" "$WPDIR/wallpaper$RANDOM.jpg"
 }
 
 die() {
