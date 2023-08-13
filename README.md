@@ -9,7 +9,7 @@ a random image from the specified subreddits. If you have pywal it also can set 
 ## Requirements
 
 This script is made to work with ```feh```, ```nitrogen```, 
-```XFCE```, ```GNOME```, ```KDE``` or  ```Sway```, having one of those is a requirement.```
+```XFCE```, ```GNOME```, ```KDE``` or  ```Sway```, having one of those is a requirement.
 ## Install
 ```
 git clone https://github.com/thevinter/styli.sh
@@ -102,22 +102,54 @@ To manage custom subreddits just edit the ```subreddits``` file by placing there
 ## TODO
 * Cinnamon support
 * Remove the need for flags by reading `$DESKTOP_SESSION`
+* (proposal @ppenguin) Support multiple search topics, separated by (e.g.) `|`, between which is chosen randomly at each execution
 
-## Plugins
-
-(Proposed feature by @ppenguin)
+## Plugins (Proposed feature by @ppenguin)
 
 Plugins are any functions defined in the subdir `./plugins/*.sh`, which will be sourced in `styli.sh`
-and can then be called as "hook" functions.
+and can then be called as filter "hook" functions that operate on the designated wallpaper image.
 
 The idea is that we can provide and easily integrate optional functionality, like e.g. postprocessing filters,
 into `styli.sh`.
 
+### Some thoughts
+
+Due to the pipeline character of operations, it is probably a good idea to categorise plugins according to their
+order in the pipeline.
+
+Roughly the pipeline works like this (step 3 is scope of the filter plugins, step 2 proposed for sysenv plugins):
+
+1. parse options and get some env info
+2. (TODO) execute plugin functions to set variables by querying the system, which are otherwise set with user flags
+3. download/select wallpaper image
+4. Apply filters (from filter plugins), this modifies the cached wallpaper image
+5. set wallpaper
+
+### Filter plugins
+
 Currently includes one example, that provides:
 
-- `overlay`: overlays an image (e.g. a logo from a given image) on the fetched wallpaper by invoking `imagemagick` on the fetched wallpaper,
+- `logo_overlay`: overlays an image (e.g. a logo from a given image) on the fetched wallpaper by invoking `imagemagick` on the fetched wallpaper,
   before supplying the image to the wallpaper set action.
   Inspired by [instantwallpaper](https://github.com/instantOS/instantWALLPAPER).
 
 Another idea (next?) would be to define functions that could provide information instead of cli arguments, e.g. to query number of monitors and resolutions
 if necessary (e.g. with `hyprctl monitors`). The return values of such functions should be well defined, so they could be implemented for multiple WMs/DEs with ease.
+
+#### Usage
+
+Filter plugins are used with
+
+```
+# pseudo code:
+styli.sh -f "filter_function:filter_arg1:filter:arg2"
+
+# example:
+styli.sh -f "logo_overlay:$HOME/Pictures/mylogo.png"
+```
+
+### `sysenv` plugins
+
+These plugins could set internal variables automatically by querying the system. Typically this would set the same settings that are otherwise set with user flags.
+These plugins should be executed early in the script, because we probably want to use some of their results already for the downloading step.
+
