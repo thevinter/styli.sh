@@ -5,6 +5,7 @@
 # SC2154: var is referenced but not assigned.
 # SC2034: foo appears unused. Verify it or export it.
 
+THIS="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 LINK="https://source.unsplash.com/random/"
 
@@ -436,7 +437,7 @@ NITROGEN=false
 SWAY=false
 MONITORS=1
 # SC2034
-PARSED_ARGUMENTS=$(getopt -a -n "$0" -o h:w:s:l:b:r:a:c:d:m:pLknxgye:sa --long search:,height:,width:,fehbg:,fehopt:,artist:,subreddit:,directory:,monitors:,termcolor:,lighwal:,kde,nitrogen,xfce,gnome,sway,enkei,save -- "$@")
+PARSED_ARGUMENTS=$(getopt -a -n "$0" -o h:w:s:l:b:r:a:c:d:m:f:pLknxgye:sa --long search:,height:,width:,fehbg:,fehopt:,artist:,subreddit:,directory:,monitors:,termcolor:,lighwal:,filter:,kde,nitrogen,xfce,gnome,sway,enkei,save -- "$@")
 
 VALID_ARGUMENTS=$?
 if [ "$VALID_ARGUMENTS" != "0" ]; then
@@ -522,6 +523,10 @@ while :; do
         ENKEI=true
         shift
         ;;
+    -f | --filter)
+        FILTER="$2"
+        shift 2
+        ;;
     -- | '')
         shift
         break
@@ -535,8 +540,15 @@ done
 
 # load plugins
 if [ -d "$THIS/plugins" ]; then
-    . "$THIS/plugins"/*.sh 2>/dev/null
+    echo "loading plugins from $(ls "$THIS/plugins"/*.sh)"
+    . "$THIS/plugins"/*.sh # 2>/dev/null
 fi
+
+# here the "pipeline" starts, with each if-block representing a step
+# 1. select or download
+# 2. check valid image file
+# 3. apply filter(s) if defined
+# 4. set wallpaper
 
 if [ -n "$DIR" ] && [ -z "$SAVE" ]; then
     select_random_wallpaper
@@ -551,6 +563,18 @@ else
 fi
 
 type_check
+
+# TODO: support multiple filters, e.g. split by |
+if [ -n "$FILTER" ]; then
+    IFS=":" read -ra filtcmd <<<"$FILTER"
+    if [[ $(type -t "${filtcmd[0]}") == function ]]; then
+        echo "executing filter \"${filtcmd[0]}\" with arguments \"${filtcmd[*]:1}\""
+        # shellcheck disable=SC2068
+        ${filtcmd[0]} ${filtcmd[@]:1}
+    else
+        echo "WARNING: filter plugin \"${filtcmd[0]}\" does not exist, ignoring"
+    fi
+fi
 
 if [ "$KDE" = true ]; then
     kde_cmd
