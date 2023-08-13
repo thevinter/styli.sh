@@ -195,6 +195,8 @@ unsplash() {
         LINK="${LINK}/?${SEARCH}"
     fi
 
+    echo "saving from unslpash ($LINK) to $WALLPAPER" >&2
+
     wget -q -O "$WALLPAPER" "$LINK"
 }
 
@@ -244,6 +246,7 @@ usage() {
     [-g | --gnome]
     [-m | --monitors <monitor count (nitrogen)>]
     [-n | --nitrogen]
+    [-e | --enkei]
     [-sa | --save]    <Save current image to pictures directory>
     "
     exit 2
@@ -408,6 +411,15 @@ feh_cmd() {
     "${FEH[@]}"
 }
 
+enkei_cmd() {
+    # TODO: support enkeictl options
+    local CMD
+    CMD=(enkeictl)
+    CMD+=("$WALLPAPER")
+    echo "executing: ${CMD[*]}" >&2
+    "${CMD[@]}"
+}
+
 PYWAL=0
 LIGHT=0
 KDE=false
@@ -417,7 +429,7 @@ NITROGEN=false
 SWAY=false
 MONITORS=1
 # SC2034
-PARSED_ARGUMENTS=$(getopt -a -n "$0" -o h:w:s:l:b:r:a:c:d:m:pLknxgy:sa --long search:,height:,width:,fehbg:,fehopt:,artist:,subreddit:,directory:,monitors:,termcolor:,lighwal:,kde,nitrogen,xfce,gnome,sway,save -- "$@")
+PARSED_ARGUMENTS=$(getopt -a -n "$0" -o h:w:s:l:b:r:a:c:d:m:pLknxgye:sa --long search:,height:,width:,fehbg:,fehopt:,artist:,subreddit:,directory:,monitors:,termcolor:,lighwal:,kde,nitrogen,xfce,gnome,sway,enkei,save -- "$@")
 
 VALID_ARGUMENTS=$?
 if [ "$VALID_ARGUMENTS" != "0" ]; then
@@ -498,6 +510,10 @@ while :; do
         SWAY=true
         shift
         ;;
+    -e | --enkei)
+        ENKEI=true
+        shift
+        ;;
     -- | '')
         shift
         break
@@ -533,6 +549,8 @@ elif [ "$NITROGEN" = true ]; then
     nitrogen_cmd
 elif [ "$SWAY" = true ]; then
     sway_cmd
+elif [ "$ENKEI" = true ]; then
+    enkei_cmd
 else
     feh_cmd >/dev/null 2>&1
 fi
