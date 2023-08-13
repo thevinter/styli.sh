@@ -22,16 +22,17 @@ CACHEDIR="${XDG_CACHE_HOME}/styli.sh"
 if [ ! -d "$CACHEDIR" ]; then
     mkdir -p "$CACHEDIR"
 fi
-WPDIR="${STYLISH_WALLSDIR:-$HOME/Pictures}"
+WPDIR="${STYLISH_WALLSDIR:-$HOME/Pictures/wallpapers}"
 if [ ! -d "$WPDIR" ]; then
     mkdir -p "$WPDIR"
 fi
 
 WALLPAPER="$CACHEDIR/wallpaper.jpg"
 
-
 save_cmd() {
-    cp "$WALLPAPER" "$WPDIR/wallpaper$RANDOM.jpg"
+    rnd=$RANDOM
+    echo "saving $WALLPAPER to $WPDIR/wallpaper$rnd.jpg" >&2
+    cp "$WALLPAPER" "$WPDIR/wallpaper$rnd.jpg"
 }
 
 die() {
@@ -245,7 +246,7 @@ usage() {
     [-l | --link <source>]
     [-p | --termcolor]
     [-L | --lightwal]
-    [-d | --directory]
+    [-d | --directory] (used for selecting existing images or saving)
     [-k | --kde]
     [-x | --xfce]
     [-g | --gnome]
@@ -489,6 +490,7 @@ while :; do
         ;;
     -d | --directory)
         DIR=${2}
+        WPDIR=$DIR
         shift 2
         ;;
     -p | --termcolor)
@@ -530,7 +532,7 @@ while :; do
     esac
 done
 
-if [ -n "$DIR" ]; then
+if [ -n "$DIR" ] && [ -z "$SAVE" ]; then
     select_random_wallpaper
 elif [ "$LINK" = "reddit" ] || [ -n "$SUB" ]; then
     reddit "$SUB"
