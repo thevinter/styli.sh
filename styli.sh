@@ -29,6 +29,7 @@ fi
 
 WALLPAPER="$CACHEDIR/wallpaper.jpg"
 
+
 save_cmd() {
     rnd=$RANDOM
     echo "saving $WALLPAPER to $WPDIR/wallpaper$rnd.jpg" >&2
@@ -531,6 +532,11 @@ while :; do
         ;;
     esac
 done
+
+# load plugins
+if [ -d "$THIS/plugins" ]; then
+    . "$THIS/plugins"/*.sh 2>/dev/null
+fi
 
 if [ -n "$DIR" ] && [ -z "$SAVE" ]; then
     select_random_wallpaper

@@ -102,3 +102,22 @@ To manage custom subreddits just edit the ```subreddits``` file by placing there
 ## TODO
 * Cinnamon support
 * Remove the need for flags by reading `$DESKTOP_SESSION`
+
+## Plugins
+
+(Proposed feature by @ppenguin)
+
+Plugins are any functions defined in the subdir `./plugins/*.sh`, which will be sourced in `styli.sh`
+and can then be called as "hook" functions.
+
+The idea is that we can provide and easily integrate optional functionality, like e.g. postprocessing filters,
+into `styli.sh`.
+
+Currently includes one example, that provides:
+
+- `overlay`: overlays an image (e.g. a logo from a given image) on the fetched wallpaper by invoking `imagemagick` on the fetched wallpaper,
+  before supplying the image to the wallpaper set action.
+  Inspired by [instantwallpaper](https://github.com/instantOS/instantWALLPAPER).
+
+Another idea (next?) would be to define functions that could provide information instead of cli arguments, e.g. to query number of monitors and resolutions
+if necessary (e.g. with `hyprctl monitors`). The return values of such functions should be well defined, so they could be implemented for multiple WMs/DEs with ease.
