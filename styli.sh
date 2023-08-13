@@ -540,7 +540,7 @@ done
 
 # load plugins
 if [ -d "$THIS/plugins" ]; then
-    echo "loading plugins from $(ls "$THIS/plugins"/*.sh)"
+    echo "loading plugins from $(ls "$THIS/plugins"/*.sh)" >&2
     . "$THIS/plugins"/*.sh # 2>/dev/null
 fi
 
@@ -568,11 +568,11 @@ type_check
 if [ -n "$FILTER" ]; then
     IFS=":" read -ra filtcmd <<<"$FILTER"
     if [[ $(type -t "${filtcmd[0]}") == function ]]; then
-        echo "executing filter \"${filtcmd[0]}\" with arguments \"${filtcmd[*]:1}\""
+        echo "executing filter \"${filtcmd[0]}\" with arguments \"${filtcmd[*]:1}\"" >&2
         # shellcheck disable=SC2068
         ${filtcmd[0]} ${filtcmd[@]:1}
     else
-        echo "WARNING: filter plugin \"${filtcmd[0]}\" does not exist, ignoring"
+        echo "WARNING: filter plugin \"${filtcmd[0]}\" does not exist, ignoring" >&2
     fi
 fi
 
