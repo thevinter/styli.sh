@@ -421,6 +421,9 @@ feh_cmd() {
 
 enkei_cmd() {
     # TODO: support enkeictl options
+    # !!! enkictl doesn't seem to work, i.e. it doesn't change the image, so for now we brute-force it like this:
+    systemctl --user restart enkei
+    return
     local CMD
     CMD=(enkeictl)
     CMD+=("$WALLPAPER")
