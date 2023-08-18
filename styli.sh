@@ -440,7 +440,7 @@ NITROGEN=false
 SWAY=false
 MONITORS=1
 # SC2034
-PARSED_ARGUMENTS=$(getopt -a -n "$0" -o h:w:s:l:b:r:a:c:d:m:f:pLknxgye:sa --long search:,height:,width:,fehbg:,fehopt:,artist:,subreddit:,directory:,monitors:,termcolor:,lighwal:,filter:,kde,nitrogen,xfce,gnome,sway,enkei,save -- "$@")
+PARSED_ARGUMENTS=$(getopt -a -n "$0" -o h:w:s:l:b:r:a:c:d:m:f:pLknxgye,sa --long search:,height:,width:,fehbg:,fehopt:,artist:,subreddit:,directory:,monitors:,termcolor:,lighwal:,filter:,kde,nitrogen,xfce,gnome,sway,enkei,save -- "$@")
 
 VALID_ARGUMENTS=$?
 if [ "$VALID_ARGUMENTS" != "0" ]; then
