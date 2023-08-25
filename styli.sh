@@ -30,15 +30,25 @@ fi
 
 WALLPAPER="$CACHEDIR/wallpaper.jpg"
 
+# standard output to be optionally overridden by output plugins
+# (This supports showing messages via things like dunst, mako)
+NOTIFY_OUT=outstd
+outstd() {
+    cat -
+}
+NOTIFY_ERR=outerr
+outerr() {
+    cat - >&2
+}
 
 save_cmd() {
     rnd=$RANDOM
-    echo "saving $WALLPAPER to $WPDIR/wallpaper$rnd.jpg" >&2
+    echo "saving $WALLPAPER to $WPDIR/wallpaper$rnd.jpg" | $NOTIFY_OUT
     cp "$WALLPAPER" "$WPDIR/wallpaper$rnd.jpg"
 }
 
 die() {
-    printf "ERR: %s\n" "$1" >&2
+    printf "ERR: %s\n" "$1" | $NOTIFY_ERR
     exit 1
 }
 
@@ -160,7 +170,7 @@ reddit() {
         SUB="$1"
     else
         if [ ! -f "$CONFDIR/subreddits" ]; then
-            echo "Please install the subreddits file in $CONFDIR"
+            echo "Please install the subreddits file in $CONFDIR" | $NOTIFY_ERR
             exit 2
         fi
         mapfile -t SUBREDDITS <"$CONFDIR/subreddits"
@@ -176,7 +186,7 @@ reddit() {
     wait # prevent spawning too many processes
     SIZE=${#URLS[@]}
     if [ "$SIZE" -eq 0 ]; then
-        echo The current subreddit is not valid.
+        echo The current subreddit is not valid. | $NOTIFY_ERR
         exit 1
     fi
     IDX=$((RANDOM % SIZE))
@@ -203,7 +213,7 @@ unsplash() {
         LINK="${LINK}/?${SEARCH}"
     fi
 
-    echo "saving from unslpash ($LINK) to $WALLPAPER" >&2
+    echo "saving from unslpash ($LINK) to $WALLPAPER" | $NOTIFY_OUT
 
     wget -q -O "$WALLPAPER" "$LINK"
 }
@@ -252,10 +262,11 @@ usage() {
     [-k | --kde]
     [-x | --xfce]
     [-g | --gnome]
-    [-m | --monitors <monitor count (nitrogen)>]
+    [-m | --monitors <monitor count>] (only used for nitrogen)
     [-n | --nitrogen]
     [-e | --enkei]
-    [-sa | --save]    <Save current image to pictures directory>
+    [-f | --filter \"<filter_function_name>:opt1:opt2\"] (multiple possible)
+    [-sa | --save]    (Save current image to pictures directory)
     "
     exit 2
 }
@@ -273,7 +284,7 @@ type_check() {
     done
 
     if [ $ISTYPE = false ]; then
-        echo "MIME-Type missmatch. Downloaded file is not an image!"
+        echo "MIME-Type missmatch. Downloaded file is not an image!" | $NOTIFY_ERR
         exit 1
     fi
 }
@@ -422,13 +433,12 @@ feh_cmd() {
 enkei_cmd() {
     # TODO: support enkeictl options
     # !!! enkictl doesn't seem to work, i.e. it doesn't change the image, so for now we brute-force it like this:
-    systemctl --user restart enkei
-    return
-    local CMD
-    CMD=(enkeictl)
-    CMD+=("$WALLPAPER")
-    echo "executing: ${CMD[*]}" >&2
-    "${CMD[@]}"
+    systemctl --user restart enkei && echo "wallpaper $WALLPAPER reloaded with enkei (restarted)" | $NOTIFY_OUT
+    # local CMD
+    # CMD=(enkeictl)
+    # CMD+=("$WALLPAPER")
+    # echo "executing: ${CMD[*]}" >&2
+    # "${CMD[@]}"
 }
 
 PYWAL=0
@@ -445,8 +455,10 @@ PARSED_ARGUMENTS=$(getopt -a -n "$0" -o h:w:s:l:b:r:a:c:d:m:f:pLknxgye,sa --long
 VALID_ARGUMENTS=$?
 if [ "$VALID_ARGUMENTS" != "0" ]; then
     usage
-    exit
 fi
+
+FILTERS=()
+
 while :; do
     case "${1}" in
     -b | --fehbg)
@@ -527,7 +539,7 @@ while :; do
         shift
         ;;
     -f | --filter)
-        FILTER="$2"
+        FILTERS+=("$2")
         shift 2
         ;;
     -- | '')
@@ -535,23 +547,25 @@ while :; do
         break
         ;;
     *)
-        echo "Unexpected option: $1 - this should not happen."
+        echo "Unexpected option: $1 - this should not happen." | $NOTIFY_ERR
         usage
         ;;
     esac
 done
-
-# load plugins
-if [ -d "$THIS/plugins" ]; then
-    echo "loading plugins from $(ls "$THIS/plugins"/*.sh)" >&2
-    . "$THIS/plugins"/*.sh # 2>/dev/null
-fi
 
 # here the "pipeline" starts, with each if-block representing a step
 # 1. select or download
 # 2. check valid image file
 # 3. apply filter(s) if defined
 # 4. set wallpaper
+
+# load plugins
+if [ -d "$THIS/plugins" ]; then
+    for f in "$THIS/plugins"/*.sh; do
+        echo "loading plugin from: $f" | $NOTIFY_OUT
+        . "$f" #2>/dev/null
+    done
+fi
 
 if [ -n "$DIR" ] && [ -z "$SAVE" ]; then
     select_random_wallpaper
@@ -568,16 +582,18 @@ fi
 type_check
 
 # TODO: support multiple filters, e.g. split by |
-if [ -n "$FILTER" ]; then
-    IFS=":" read -ra filtcmd <<<"$FILTER"
-    if [[ $(type -t "${filtcmd[0]}") == function ]]; then
-        echo "executing filter \"${filtcmd[0]}\" with arguments \"${filtcmd[*]:1}\"" >&2
-        # shellcheck disable=SC2068
-        ${filtcmd[0]} ${filtcmd[@]:1}
-    else
-        echo "WARNING: filter plugin \"${filtcmd[0]}\" does not exist, ignoring" >&2
+for f in "${FILTERS[@]}"; do
+    if [ -n "$f" ]; then
+        IFS=":" read -ra filtcmd <<<"$f"
+        if [[ $(type -t "${filtcmd[0]}") == function ]]; then
+            echo "executing filter \"${filtcmd[0]}\" with arguments \"${filtcmd[*]:1}\"" >&2
+            # shellcheck disable=SC2068
+            ${filtcmd[0]} ${filtcmd[@]:1}
+        else
+            echo "WARNING: filter plugin \"${filtcmd[0]}\" does not exist, ignoring" | $NOTIFY_ERR
+        fi
     fi
-fi
+done
 
 if [ "$KDE" = true ]; then
     kde_cmd

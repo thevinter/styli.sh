@@ -4,24 +4,24 @@
 # provides filters that can be applied to fetched wallpapers by executing an
 # imagemagick (required dependency for this) hook
 
-if ! IMCONV=$(command -v convert); then
-	echo "WARNING: convert (part of imagemagick) not found, filters not functional" >&2
-fi
-if ! IMCOMP=$(command -v composite); then
-	echo "WARNING: composite (part of imagemagick) not found, filters not functional" >&2
-fi
-if ! IMIDENT=$(command -v identify); then
-	echo "WARNING: identify (part of imagemagick) not found, filters not functional" >&2
+echo "filter-im.sh::FILTERS=${FILTERS[*]}" >&2
+
+IMCONV=$(command -v convert) || err1=$?
+IMCOMP=$(command -v composite) || err2=$?
+IMIDENT=$(command -v identify) || err3=$?
+
+if [[ $(( err1 + err2 + err3 )) -gt 0 ]]; then
+	echo "WARNING: imagemagick not found, filters not functional" | $NOTIFY_ERR
 fi
 
 # logo_overlay <logo file>
 logo_overlay() {
 	if [ ! $# -eq 1 ]; then
-		echo "logo_overlay requires 1 arguments, $# given, doing nothing" >&2
+		echo "logo_overlay requires 1 arguments, $# given, doing nothing" | $NOTIFY_ERR
 		return
 	fi
 	if [ ! -f "$1" ]; then
-		echo "logo_overlay: $1 does not exist, doing nothing" >&2
+		echo "logo_overlay: $1 does not exist, doing nothing" | $NOTIFY_ERR
 		return
 	fi
 	# set -x
