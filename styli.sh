@@ -592,5 +592,5 @@ for f in "${FILTERS[@]}"; do
     fi
 done
 
-$SETWALL | $NOTIFY_ERR
+$SETWALL
 pywal_cmd
