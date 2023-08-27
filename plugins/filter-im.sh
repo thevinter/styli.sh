@@ -38,10 +38,10 @@ logo_overlay() {
 	$IMCONV "$WALLPAPER" "$origwp"  2>/dev/null # convert instead of copy to get the type right (png from jpg to do alpha stuff)
 	wpgeom="$($IMIDENT "$origwp" | awk '{ print $3 }')"
 
-	$IMCONV "$logo" -alpha extract -resize "$wpgeom" `#-define png:color-type=6` "$mask" 2>/dev/null
-	$IMCOMP -compose CopyOpacity "$mask" "$origwp" "$cutmask" 2>/dev/null
-	$IMCONV "$cutmask" -channel RGB -negate "$invert" 2>/dev/null
-	$IMCONV "$origwp" "$invert" -gravity center -composite "$WALLPAPER" 2>/dev/null
+	$IMCONV "$logo" -alpha extract -resize "$wpgeom" `#-define png:color-type=6` "$mask" 2>&1 | outdbg
+	$IMCOMP -compose CopyOpacity "$mask" "$origwp" "$cutmask" 2>&1 | outdbg
+	$IMCONV "$cutmask" -channel RGB -negate "$invert" 2>&1 | outdbg
+	$IMCONV "$origwp" "$invert" -gravity center -composite "$WALLPAPER" 2>&1 | outdbg
 
 	[ -d "$tmpdir" ] && rm -rf "$tmpdir"
 	# set +x

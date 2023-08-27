@@ -24,9 +24,9 @@ fi
 
 setwall_hyprpaper() {
 	# shellcheck disable=SC2088
-	$SETWALL_EXE hyprpaper unload "$WALLPAPER" &>/dev/null && hyprctl hyprpaper preload "$WALLPAPER" &>/dev/null
+	($SETWALL_EXE hyprpaper unload "$WALLPAPER" && hyprctl hyprpaper preload "$WALLPAPER" ) 2>&1 | outdbg
 	# for now brute-force on all known monitors, because monitor wildcard doesn't work right
 	$SETWALL_EXE monitors | awk '$1~/^Monitor/{print $2}' | while read -r m; do
-		$SETWALL_EXE hyprpaper wallpaper "$m,$WALLPAPER" &>/dev/null
+		$SETWALL_EXE hyprpaper wallpaper "$m,$WALLPAPER" 2>&1 | outdbg
 	done
 }

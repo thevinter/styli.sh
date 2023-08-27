@@ -5,11 +5,16 @@
 # SC2154: var is referenced but not assigned.
 # SC2034: foo appears unused. Verify it or export it.
 
+# simulate pedantic options added by nix's writeShellApplication
+# set -o errexit
+# set -o nounset
+# set -o pipefail
+
 THIS="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 # declare optional variables to work with pedantic -o nounset shell option
 # (The pedantic setting is added by nix's writeShellApplication and instead of resetting with +o we might as well just prevent avoidable runtime "errors" in our script)
-declare DIR="" SUB="" ARTIST="" SAVE=""
+declare DIR="" SUB="" ARTIST="" SAVE="" DEBUG=0
 
 LINK="https://source.unsplash.com/random/"
 
@@ -43,6 +48,14 @@ outstd() {
 NOTIFY_ERR=outerr
 outerr() {
     cat - >&2
+}
+
+outdbg() {
+    if [ "$DEBUG" -eq 1 ]; then
+        cat - >&2
+    else
+        cat - >/dev/null
+    fi
 }
 
 save_cmd() {
@@ -203,7 +216,7 @@ reddit() {
     # TARGET_ID=${IDS[$IDX]}
     # EXT=$(echo -n "${TARGET_URL##*.}" | cut -d '?' -f 1)
     # NEWNAME=$(echo "$TARGET_NAME" | sed "s/^\///;s/\// /g")_"$SUBREDDIT"_$TARGET_ID.$EXT
-    wget -T $TIMEOUT -U "$USERAGENT" --no-check-certificate -q -P down -O "$WALLPAPER" "$TARGET_URL" &>/dev/null
+    wget -T $TIMEOUT -U "$USERAGENT" --no-check-certificate -q -P down -O "$WALLPAPER" "$TARGET_URL" 2>&1 | outdbg
 }
 
 unsplash() {
@@ -220,7 +233,7 @@ unsplash() {
 
     echo "saving from unslpash ($LINK) to $WALLPAPER" | $NOTIFY_OUT
 
-    wget -q -O "$WALLPAPER" "$LINK"
+    wget -q -O "$WALLPAPER" "$LINK" 2>&1 | outdbg
 }
 
 deviantart() {
@@ -250,7 +263,7 @@ deviantart() {
     SIZE=${#URLS[@]}
     IDX=$((RANDOM % SIZE))
     TARGET_URL=${ARRURLS[$IDX]}
-    wget --no-check-certificate -q -P down -O "$WALLPAPER" "$TARGET_URL" &>/dev/null
+    wget --no-check-certificate -q -P down -O "$WALLPAPER" "$TARGET_URL" 2>&1 | outdbg
 }
 
 usage() {
@@ -273,6 +286,7 @@ usage() {
     [-e | --enkei]
     [-f | --filter \"<filter_function_name>:opt1:opt2\"] (multiple possible)
     [-sa | --save]    (Save current image to pictures directory)
+    [-v | --verbose] (verbose (debug) output on stderr)
     "
     exit 2
 }
@@ -439,7 +453,7 @@ feh_cmd() {
 enkei_cmd() {
     # TODO: support enkeictl options
     # !!! enkictl doesn't seem to work, i.e. it doesn't change the image, so for now we brute-force it like this:
-    systemctl --user restart enkei && echo "wallpaper $WALLPAPER reloaded with enkei (restarted)" | $NOTIFY_OUT
+    systemctl --user restart enkei && echo "wallpaper $WALLPAPER reloaded with enkei (restarted)" | outdbg
     # local CMD
     # CMD=(enkeictl)
     # CMD+=("$WALLPAPER")
@@ -453,7 +467,7 @@ PYWAL=0
 LIGHT=0
 MONITORS=1
 # shellcheck disable=SC2034
-PARSED_ARGUMENTS=$(getopt -a -n "$0" -o h:w:s:l:b:r:a:c:d:m:f:pLknxgye,sa --long search:,height:,width:,fehbg:,fehopt:,artist:,subreddit:,directory:,monitors:,termcolor:,lighwal:,filter:,kde,nitrogen,xfce,gnome,sway,enkei,save -- "$@")
+PARSED_ARGUMENTS=$(getopt -a -n "$0" -o h:w:s:l:b:r:a:c:d:m:f:pLknxgyev,sa --long search:,height:,width:,fehbg:,fehopt:,artist:,subreddit:,directory:,monitors:,termcolor:,lighwal:,filter:,kde,nitrogen,xfce,gnome,sway,enkei,save,verbose -- "$@")
 
 VALID_ARGUMENTS=$?
 if [ "$VALID_ARGUMENTS" != "0" ]; then
@@ -541,6 +555,10 @@ while [ $# -gt 0 ]; do
         SETWALL=enkei_cmd
         shift
         ;;
+    -v | --verbose)
+        DEBUG=1
+        shift
+        ;;
     -f | --filter)
         FILTERS+=("$2")
         shift 2
@@ -556,7 +574,7 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-# here the "pipeline" starts, with each if-block representing a step
+# here the "pipeline" starts, with each if-block representing an optional step
 # 1. select or download
 # 2. check valid image file
 # 3. apply filter(s) if defined
@@ -565,7 +583,7 @@ done
 # load plugins
 if [ -d "$THIS/plugins" ]; then
     for plugin in "$THIS/plugins"/*.sh; do
-        echo "loading plugin from: $plugin" | $NOTIFY_OUT
+        echo "loading plugin from: $plugin" | outdbg
         # shellcheck disable=SC1090
         . "$plugin"
     done
@@ -585,14 +603,13 @@ fi
 
 type_check
 
-# TODO: support multiple filters, e.g. split by |
 for f in "${FILTERS[@]}"; do
     if [ -n "$f" ]; then
         IFS=":" read -ra filtcmd <<<"$f"
         if [[ $(type -t "${filtcmd[0]}") == function ]]; then
-            echo "executing filter \"${filtcmd[0]}\" with arguments \"${filtcmd[*]:1}\"" >&2
+            echo "executing filter \"${filtcmd[0]}\" with arguments \"${filtcmd[*]:1}\"" | outdbg
             # shellcheck disable=SC2068
-            ${filtcmd[0]} ${filtcmd[@]:1}
+            ${filtcmd[0]} ${filtcmd[@]:1} || echo "error executing ${filtcmd[0]} ${filtcmd[*]:1}" | $NOTIFY_ERR
         else
             echo "WARNING: filter plugin \"${filtcmd[0]}\" does not exist, ignoring" | $NOTIFY_ERR
         fi
