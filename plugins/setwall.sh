@@ -16,7 +16,7 @@ if init setwall_hyprpaper; then
 		return 1
 	fi
 
-	if ! command -v hyprpaper 2>/dev/null; then
+	if ! command -v hyprpaper &>/dev/null; then
 		echo "required hyprpaper not found. setwall_hyprpaper plugin will not work" | $NOTIFY_ERR
 		return 1
 	fi
@@ -26,9 +26,9 @@ fi
 
 setwall_hyprpaper() {
 	# shellcheck disable=SC2088
-	$SETWALL_EXE hyprpaper unload "~/.cache/styli.sh/wallpaper.jpg" && hyprctl hyprpaper preload "~/.cache/styli.sh/wallpaper.jpg"
+	$SETWALL_EXE hyprpaper unload "~/.cache/styli.sh/wallpaper.jpg" &>/dev/null && hyprctl hyprpaper preload "~/.cache/styli.sh/wallpaper.jpg" &>/dev/null
 	# for now brute-force on all known monitors, because monitor wildcard doesn't work right
 	$SETWALL_EXE monitors | awk '$1~/^Monitor/{print $2}' | while read -r m; do
-		$SETWALL_EXE hyprpaper wallpaper "$m,$WALLPAPER"
+		$SETWALL_EXE hyprpaper wallpaper "$m,$WALLPAPER" &>/dev/null
 	done
 }

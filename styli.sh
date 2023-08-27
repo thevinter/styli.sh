@@ -7,6 +7,10 @@
 
 THIS="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
+# declare optional variables to work with pedantic -o nounset shell option
+# (The pedantic setting is added by nix's writeShellApplication and instead of resetting with +o we might as well just prevent avoidable runtime "errors" in our script)
+declare DIR="" SUB="" ARTIST="" SAVE=""
+
 LINK="https://source.unsplash.com/random/"
 
 if [ -z ${XDG_CONFIG_HOME+x} ]; then
@@ -458,7 +462,7 @@ fi
 
 FILTERS=()
 
-while :; do
+while [ $# -gt 0 ]; do
     case "${1}" in
     -b | --fehbg)
         BGTYPE=${2}
@@ -561,7 +565,7 @@ done
 # load plugins
 if [ -d "$THIS/plugins" ]; then
     for plugin in "$THIS/plugins"/*.sh; do
-        echo "loading plugin from: $f" | $NOTIFY_OUT
+        echo "loading plugin from: $plugin" | $NOTIFY_OUT
         # shellcheck disable=SC1090
         . "$plugin"
     done
