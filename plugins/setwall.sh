@@ -1,15 +1,13 @@
 #!/usr/bin/env bash
 
-# filters plugin defining functions for styli.sh
-# provides filters that output styli.sh messages to a notification system
-# should override $NOTIFY_OUT and optionally $NOTIFY_ERR with a function that takes a message on stdin
+# Filters plugin defining functions for styli.sh
+# Provides additional plugin(s) that override the function that sets the wallpaper by overriding the SETWALL variable
 
 # for filters that need to be defined before starting the pipeline, we have to directly check the FILTERS array
 # and override relevant variables to define the behaviour of the main script
 # For this the convenience function init() is provided in _lib.sh
 
-# echo "setwall.sh::FILTERS=${FILTERS[*]}" >&2
-
+# setwall_hyprpaper
 if init setwall_hyprpaper; then
 	if ! SETWALL_EXE=$(command -v hyprctl 2>/dev/null); then
 		echo "required hyprctl (from Hyprland) not found. setwall_hyprpaper plugin will not work" | $NOTIFY_ERR
@@ -26,7 +24,7 @@ fi
 
 setwall_hyprpaper() {
 	# shellcheck disable=SC2088
-	$SETWALL_EXE hyprpaper unload "~/.cache/styli.sh/wallpaper.jpg" &>/dev/null && hyprctl hyprpaper preload "~/.cache/styli.sh/wallpaper.jpg" &>/dev/null
+	$SETWALL_EXE hyprpaper unload "$WALLPAPER" &>/dev/null && hyprctl hyprpaper preload "$WALLPAPER" &>/dev/null
 	# for now brute-force on all known monitors, because monitor wildcard doesn't work right
 	$SETWALL_EXE monitors | awk '$1~/^Monitor/{print $2}' | while read -r m; do
 		$SETWALL_EXE hyprpaper wallpaper "$m,$WALLPAPER" &>/dev/null

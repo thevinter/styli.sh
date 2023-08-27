@@ -4,7 +4,6 @@
 # provides filters that can be applied to fetched wallpapers by executing an
 # imagemagick (required dependency for this) hook
 
-# echo "filter-im.sh::FILTERS=${FILTERS[*]}" >&2
 err1=0
 err2=0
 err3=0
