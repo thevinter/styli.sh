@@ -5,6 +5,16 @@
 # SC2154: var is referenced but not assigned.
 # SC2034: foo appears unused. Verify it or export it.
 
+# simulate pedantic options added by nix's writeShellApplication
+# set -o errexit
+# set -o nounset
+# set -o pipefail
+
+THIS="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+# declare optional variables to work with pedantic -o nounset shell option
+# (The pedantic setting is added by nix's writeShellApplication and instead of resetting with +o we might as well just prevent avoidable runtime "errors" in our script)
+declare DIR="" SUB="" ARTIST="" SAVE="" DEBUG=0
 
 LINK="https://source.unsplash.com/random/"
 
@@ -22,15 +32,40 @@ CACHEDIR="${XDG_CACHE_HOME}/styli.sh"
 if [ ! -d "$CACHEDIR" ]; then
     mkdir -p "$CACHEDIR"
 fi
+WPDIR="${STYLISH_WALLSDIR:-$HOME/Pictures/wallpapers}"
+if [ ! -d "$WPDIR" ]; then
+    mkdir -p "$WPDIR"
+fi
 
 WALLPAPER="$CACHEDIR/wallpaper.jpg"
 
+# standard output to be optionally overridden by output plugins
+# (This supports showing messages via things like dunst, mako)
+NOTIFY_OUT=outstd
+outstd() {
+    cat -
+}
+NOTIFY_ERR=outerr
+outerr() {
+    cat - >&2
+}
+
+outdbg() {
+    if [ "$DEBUG" -eq 1 ]; then
+        cat - >&2
+    else
+        cat - >/dev/null
+    fi
+}
+
 save_cmd() {
-    cp "$WALLPAPER" "$HOME/Pictures/wallpaper$RANDOM.jpg"
+    rnd=$RANDOM
+    echo "saving $WALLPAPER to $WPDIR/wallpaper$rnd.jpg" | $NOTIFY_OUT
+    cp "$WALLPAPER" "$WPDIR/wallpaper$rnd.jpg"
 }
 
 die() {
-    printf "ERR: %s\n" "$1" >&2
+    printf "ERR: %s\n" "$1" | $NOTIFY_ERR
     exit 1
 }
 
@@ -68,7 +103,8 @@ alacritty_change() { #SC2120
 
     # Get hex colors from Wal cache
     # No need for shellcheck to check this, it comes from pywal
-    . "$SRC" #SC1090
+    # shellcheck disable=SC1090
+    . "$SRC"
 
     # Create temp file for sed results
     TEMPFILE=$(mktemp)
@@ -99,7 +135,7 @@ alacritty_change() { #SC2120
 
     # Write new color definitions
     # We know $colorX is unset, we set it by sourcing above
-    # SC2154
+    # shellcheck disable=SC2154
     {
         sed "/^# BEGIN ACE/ r /dev/stdin" "$CFG" >"$TEMPFILE" <<EOP
 colors:
@@ -152,7 +188,7 @@ reddit() {
         SUB="$1"
     else
         if [ ! -f "$CONFDIR/subreddits" ]; then
-            echo "Please install the subreddits file in $CONFDIR"
+            echo "Please install the subreddits file in $CONFDIR" | $NOTIFY_ERR
             exit 2
         fi
         mapfile -t SUBREDDITS <"$CONFDIR/subreddits"
@@ -168,7 +204,7 @@ reddit() {
     wait # prevent spawning too many processes
     SIZE=${#URLS[@]}
     if [ "$SIZE" -eq 0 ]; then
-        echo The current subreddit is not valid.
+        echo The current subreddit is not valid. | $NOTIFY_ERR
         exit 1
     fi
     IDX=$((RANDOM % SIZE))
@@ -180,7 +216,7 @@ reddit() {
     # TARGET_ID=${IDS[$IDX]}
     # EXT=$(echo -n "${TARGET_URL##*.}" | cut -d '?' -f 1)
     # NEWNAME=$(echo "$TARGET_NAME" | sed "s/^\///;s/\// /g")_"$SUBREDDIT"_$TARGET_ID.$EXT
-    wget -T $TIMEOUT -U "$USERAGENT" --no-check-certificate -q -P down -O "$WALLPAPER" "$TARGET_URL" &>/dev/null
+    wget -T $TIMEOUT -U "$USERAGENT" --no-check-certificate -q -P down -O "$WALLPAPER" "$TARGET_URL" 2>&1 | outdbg
 }
 
 unsplash() {
@@ -195,7 +231,9 @@ unsplash() {
         LINK="${LINK}/?${SEARCH}"
     fi
 
-    wget -q -O "$WALLPAPER" "$LINK"
+    echo "saving from unslpash ($LINK) to $WALLPAPER" | $NOTIFY_OUT
+
+    wget -q -O "$WALLPAPER" "$LINK" 2>&1 | outdbg
 }
 
 deviantart() {
@@ -216,6 +254,7 @@ deviantart() {
     else
         #URL="https://www.deviantart.com/api/v1/oauth2/browse/hot?limit=24&offset=$OFFSET"
         TOPICS=("adoptables" "artisan-crafts" "anthro" "comics" "drawings-and-paintings" "fan-art" "poetry" "stock-images" "sculpture" "science-fiction" "traditional-art" "street-photography" "street-art" "pixel-art" "wallpaper" "digital-art" "photo-manipulation" "science-fiction" "fractal" "game-art" "fantasy" "3d" "drawings-and-paintings" "game-art")
+        # shellcheck disable=SC2154
         RAND=$((RANDOM % ${#topics[@]}))
         URL="https://www.deviantart.com/api/v1/oauth2/browse/topic?limit=24&topic=${TOPICS[$RAND]}"
     fi
@@ -224,7 +263,7 @@ deviantart() {
     SIZE=${#URLS[@]}
     IDX=$((RANDOM % SIZE))
     TARGET_URL=${ARRURLS[$IDX]}
-    wget --no-check-certificate -q -P down -O "$WALLPAPER" "$TARGET_URL" &>/dev/null
+    wget --no-check-certificate -q -P down -O "$WALLPAPER" "$TARGET_URL" 2>&1 | outdbg
 }
 
 usage() {
@@ -238,13 +277,16 @@ usage() {
     [-l | --link <source>]
     [-p | --termcolor]
     [-L | --lightwal]
-    [-d | --directory]
+    [-d | --directory] (used for selecting existing images or saving)
     [-k | --kde]
     [-x | --xfce]
     [-g | --gnome]
-    [-m | --monitors <monitor count (nitrogen)>]
+    [-m | --monitors <monitor count>] (only used for nitrogen)
     [-n | --nitrogen]
-    [-sa | --save]    <Save current image to pictures directory>
+    [-e | --enkei]
+    [-f | --filter \"<filter_function_name>:opt1:opt2\"] (multiple possible)
+    [-sa | --save]    (Save current image to pictures directory)
+    [-v | --verbose] (verbose (debug) output on stderr)
     "
     exit 2
 }
@@ -262,7 +304,7 @@ type_check() {
     done
 
     if [ $ISTYPE = false ]; then
-        echo "MIME-Type missmatch. Downloaded file is not an image!"
+        echo "MIME-Type missmatch. Downloaded file is not an image!" | $NOTIFY_ERR
         exit 1
     fi
 }
@@ -277,7 +319,7 @@ pywal_cmd() {
         wal -c
         wal -i "$WALLPAPER" -n -q
         if [ "$TERM" = alacritty ]; then
-            alacritty_change
+            alacritty_change ""
         fi
     fi
 
@@ -285,7 +327,7 @@ pywal_cmd() {
         wal -c
         wal -i "$WALLPAPER" -n -q -l
         if [ "$TERM" = alacritty ]; then
-            alacritty_change
+            alacritty_change ""
         fi
     fi
 
@@ -408,23 +450,33 @@ feh_cmd() {
     "${FEH[@]}"
 }
 
+enkei_cmd() {
+    # TODO: support enkeictl options
+    # !!! enkictl doesn't seem to work, i.e. it doesn't change the image, so for now we brute-force it like this:
+    systemctl --user restart enkei && echo "wallpaper $WALLPAPER reloaded with enkei (restarted)" | outdbg
+    # local CMD
+    # CMD=(enkeictl)
+    # CMD+=("$WALLPAPER")
+    # echo "executing: ${CMD[*]}" >&2
+    # "${CMD[@]}"
+}
+
+# default SETWALL command if not set
+SETWALL=feh_cmd
 PYWAL=0
 LIGHT=0
-KDE=false
-XFCE=false
-GNOME=false
-NITROGEN=false
-SWAY=false
 MONITORS=1
-# SC2034
-PARSED_ARGUMENTS=$(getopt -a -n "$0" -o h:w:s:l:b:r:a:c:d:m:pLknxgy:sa --long search:,height:,width:,fehbg:,fehopt:,artist:,subreddit:,directory:,monitors:,termcolor:,lighwal:,kde,nitrogen,xfce,gnome,sway,save -- "$@")
+# shellcheck disable=SC2034
+PARSED_ARGUMENTS=$(getopt -a -n "$0" -o h:w:s:l:b:r:a:c:d:m:f:pLknxgyev,sa --long search:,height:,width:,fehbg:,fehopt:,artist:,subreddit:,directory:,monitors:,termcolor:,lighwal:,filter:,kde,nitrogen,xfce,gnome,sway,enkei,save,verbose -- "$@")
 
 VALID_ARGUMENTS=$?
 if [ "$VALID_ARGUMENTS" != "0" ]; then
     usage
-    exit
 fi
-while :; do
+
+FILTERS=()
+
+while [ $# -gt 0 ]; do
     case "${1}" in
     -b | --fehbg)
         BGTYPE=${2}
@@ -467,11 +519,12 @@ while :; do
         shift 2
         ;;
     -n | --nitrogen)
-        NITROGEN=true
+        SETWALL=nitrogen_cmd
         shift
         ;;
     -d | --directory)
         DIR=${2}
+        WPDIR=$DIR
         shift 2
         ;;
     -p | --termcolor)
@@ -483,33 +536,60 @@ while :; do
         shift
         ;;
     -k | --kde)
-        KDE=true
+        SETWALL=kde_cmd
         shift
         ;;
     -x | --xfce)
-        XFCE=true
+        SETWALL=xfce_cmd
         shift
         ;;
     -g | --gnome)
-        GNOME=true
+        SETWALL=gnome_cmd
         shift
         ;;
     -y | --sway)
-        SWAY=true
+        SETWALL=sway_cmd
         shift
+        ;;
+    -e | --enkei)
+        SETWALL=enkei_cmd
+        shift
+        ;;
+    -v | --verbose)
+        DEBUG=1
+        shift
+        ;;
+    -f | --filter)
+        FILTERS+=("$2")
+        shift 2
         ;;
     -- | '')
         shift
         break
         ;;
     *)
-        echo "Unexpected option: $1 - this should not happen."
+        echo "Unexpected option: $1 - this should not happen." | $NOTIFY_ERR
         usage
         ;;
     esac
 done
 
-if [ -n "$DIR" ]; then
+# here the "pipeline" starts, with each if-block representing an optional step
+# 1. select or download
+# 2. check valid image file
+# 3. apply filter(s) if defined
+# 4. set wallpaper
+
+# load plugins
+if [ -d "$THIS/plugins" ]; then
+    for plugin in "$THIS/plugins"/*.sh; do
+        echo "loading plugin from: $plugin" | outdbg
+        # shellcheck disable=SC1090
+        . "$plugin"
+    done
+fi
+
+if [ -n "$DIR" ] && [ -z "$SAVE" ]; then
     select_random_wallpaper
 elif [ "$LINK" = "reddit" ] || [ -n "$SUB" ]; then
     reddit "$SUB"
@@ -523,18 +603,18 @@ fi
 
 type_check
 
-if [ "$KDE" = true ]; then
-    kde_cmd
-elif [ "$XFCE" = true ]; then
-    xfce_cmd
-elif [ "$GNOME" = true ]; then
-    gnome_cmd
-elif [ "$NITROGEN" = true ]; then
-    nitrogen_cmd
-elif [ "$SWAY" = true ]; then
-    sway_cmd
-else
-    feh_cmd >/dev/null 2>&1
-fi
+for f in "${FILTERS[@]}"; do
+    if [ -n "$f" ]; then
+        IFS=":" read -ra filtcmd <<<"$f"
+        if [[ $(type -t "${filtcmd[0]}") == function ]]; then
+            echo "executing filter \"${filtcmd[0]}\" with arguments \"${filtcmd[*]:1}\"" | outdbg
+            # shellcheck disable=SC2068
+            ${filtcmd[0]} ${filtcmd[@]:1} || echo "error executing ${filtcmd[0]} ${filtcmd[*]:1}" | $NOTIFY_ERR
+        else
+            echo "WARNING: filter plugin \"${filtcmd[0]}\" does not exist, ignoring" | $NOTIFY_ERR
+        fi
+    fi
+done
 
+$SETWALL
 pywal_cmd
