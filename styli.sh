@@ -441,13 +441,10 @@ enkei_cmd() {
     # "${CMD[@]}"
 }
 
+# default SETWALL command if not set
+SETWALL=feh_cmd
 PYWAL=0
 LIGHT=0
-KDE=false
-XFCE=false
-GNOME=false
-NITROGEN=false
-SWAY=false
 MONITORS=1
 # SC2034
 PARSED_ARGUMENTS=$(getopt -a -n "$0" -o h:w:s:l:b:r:a:c:d:m:f:pLknxgye,sa --long search:,height:,width:,fehbg:,fehopt:,artist:,subreddit:,directory:,monitors:,termcolor:,lighwal:,filter:,kde,nitrogen,xfce,gnome,sway,enkei,save -- "$@")
@@ -502,7 +499,7 @@ while :; do
         shift 2
         ;;
     -n | --nitrogen)
-        NITROGEN=true
+        SETWALL=nitrogen_cmd
         shift
         ;;
     -d | --directory)
@@ -519,23 +516,23 @@ while :; do
         shift
         ;;
     -k | --kde)
-        KDE=true
+        SETWALL=kde_cmd
         shift
         ;;
     -x | --xfce)
-        XFCE=true
+        SETWALL=xfce_cmd
         shift
         ;;
     -g | --gnome)
-        GNOME=true
+        SETWALL=gnome_cmd
         shift
         ;;
     -y | --sway)
-        SWAY=true
+        SETWALL=sway_cmd
         shift
         ;;
     -e | --enkei)
-        ENKEI=true
+        SETWALL=enkei_cmd
         shift
         ;;
     -f | --filter)
@@ -595,20 +592,5 @@ for f in "${FILTERS[@]}"; do
     fi
 done
 
-if [ "$KDE" = true ]; then
-    kde_cmd
-elif [ "$XFCE" = true ]; then
-    xfce_cmd
-elif [ "$GNOME" = true ]; then
-    gnome_cmd
-elif [ "$NITROGEN" = true ]; then
-    nitrogen_cmd
-elif [ "$SWAY" = true ]; then
-    sway_cmd
-elif [ "$ENKEI" = true ]; then
-    enkei_cmd
-else
-    feh_cmd >/dev/null 2>&1
-fi
-
+$SETWALL | $NOTIFY_ERR
 pywal_cmd

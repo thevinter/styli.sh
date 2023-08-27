@@ -4,7 +4,7 @@
 # provides filters that can be applied to fetched wallpapers by executing an
 # imagemagick (required dependency for this) hook
 
-echo "filter-im.sh::FILTERS=${FILTERS[*]}" >&2
+# echo "filter-im.sh::FILTERS=${FILTERS[*]}" >&2
 
 IMCONV=$(command -v convert) || err1=$?
 IMCOMP=$(command -v composite) || err2=$?
@@ -17,7 +17,7 @@ fi
 # logo_overlay <logo file>
 logo_overlay() {
 	if [ ! $# -eq 1 ]; then
-		echo "logo_overlay requires 1 arguments, $# given, doing nothing" | $NOTIFY_ERR
+		echo "logo_overlay requires 1 argument, $# given, doing nothing" | $NOTIFY_ERR
 		return
 	fi
 	if [ ! -f "$1" ]; then

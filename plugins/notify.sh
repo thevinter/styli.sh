@@ -8,7 +8,7 @@
 # and override relevant variables to define the behaviour of the main script
 # For this the convenience function init() is provided in _lib.sh
 
-echo "notify.sh::FILTERS=${FILTERS[*]}" >&2
+# echo "notify.sh::FILTERS=${FILTERS[*]}" >&2
 
 # notify_send
 if init notify_send; then
