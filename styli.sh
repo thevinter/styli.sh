@@ -86,7 +86,8 @@ alacritty_change() { #SC2120
 
     # Get hex colors from Wal cache
     # No need for shellcheck to check this, it comes from pywal
-    . "$SRC" #SC1090
+    # shellcheck disable=SC1090
+    . "$SRC"
 
     # Create temp file for sed results
     TEMPFILE=$(mktemp)
@@ -117,7 +118,7 @@ alacritty_change() { #SC2120
 
     # Write new color definitions
     # We know $colorX is unset, we set it by sourcing above
-    # SC2154
+    # shellcheck disable=SC2154
     {
         sed "/^# BEGIN ACE/ r /dev/stdin" "$CFG" >"$TEMPFILE" <<EOP
 colors:
@@ -236,6 +237,7 @@ deviantart() {
     else
         #URL="https://www.deviantart.com/api/v1/oauth2/browse/hot?limit=24&offset=$OFFSET"
         TOPICS=("adoptables" "artisan-crafts" "anthro" "comics" "drawings-and-paintings" "fan-art" "poetry" "stock-images" "sculpture" "science-fiction" "traditional-art" "street-photography" "street-art" "pixel-art" "wallpaper" "digital-art" "photo-manipulation" "science-fiction" "fractal" "game-art" "fantasy" "3d" "drawings-and-paintings" "game-art")
+        # shellcheck disable=SC2154
         RAND=$((RANDOM % ${#topics[@]}))
         URL="https://www.deviantart.com/api/v1/oauth2/browse/topic?limit=24&topic=${TOPICS[$RAND]}"
     fi
@@ -299,7 +301,7 @@ pywal_cmd() {
         wal -c
         wal -i "$WALLPAPER" -n -q
         if [ "$TERM" = alacritty ]; then
-            alacritty_change
+            alacritty_change ""
         fi
     fi
 
@@ -307,7 +309,7 @@ pywal_cmd() {
         wal -c
         wal -i "$WALLPAPER" -n -q -l
         if [ "$TERM" = alacritty ]; then
-            alacritty_change
+            alacritty_change ""
         fi
     fi
 
@@ -446,7 +448,7 @@ SETWALL=feh_cmd
 PYWAL=0
 LIGHT=0
 MONITORS=1
-# SC2034
+# shellcheck disable=SC2034
 PARSED_ARGUMENTS=$(getopt -a -n "$0" -o h:w:s:l:b:r:a:c:d:m:f:pLknxgye,sa --long search:,height:,width:,fehbg:,fehopt:,artist:,subreddit:,directory:,monitors:,termcolor:,lighwal:,filter:,kde,nitrogen,xfce,gnome,sway,enkei,save -- "$@")
 
 VALID_ARGUMENTS=$?
@@ -558,9 +560,10 @@ done
 
 # load plugins
 if [ -d "$THIS/plugins" ]; then
-    for f in "$THIS/plugins"/*.sh; do
+    for plugin in "$THIS/plugins"/*.sh; do
         echo "loading plugin from: $f" | $NOTIFY_OUT
-        . "$f" #2>/dev/null
+        # shellcheck disable=SC1090
+        . "$plugin"
     done
 fi
 
