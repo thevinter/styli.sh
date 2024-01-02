@@ -11,6 +11,7 @@ a random image from the specified subreddits. If you have pywal it also can set 
 This script is made to work with ```feh```, ```nitrogen```, 
 ```XFCE```, ```GNOME```, ```KDE``` or  ```Sway```, having one of those is a requirement.```
 ## Install
+
 ```
 git clone https://github.com/thevinter/styli.sh
 cd styli.sh
