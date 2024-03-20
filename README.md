@@ -77,8 +77,13 @@ $ ./styli.sh -x
 # KDE
 $ ./styli.sh -k
 
+
+# Hyprpaper (Hyprland)
+$ ./styli.sh -hp
+
 # Sway
 $ ./styli.sh -y
+
 ```
 
 ## Tips And Tricks
