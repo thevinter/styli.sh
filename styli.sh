@@ -316,28 +316,9 @@ sway_cmd() {
 }
 
 hyprpaper_cmd() {
-    if [ -n "$BGTYPE" ]; then
-        if [ "$BGTYPE" == 'bg-center' ]; then
-            MODE="center"
-        fi
-        if [ "$BGTYPE" == 'bg-fill' ]; then
-            MODE="fill"
-        fi
-        if [ "$BGTYPE" == 'bg-max' ]; then
-            MODE="fit"
-        fi
-        if [ "$BGTYPE" == 'bg-scale' ]; then
-            MODE="stretch"
-        fi
-        if [ "$BGTYPE" == 'bg-tile' ]; then
-            MODE="tile"
-        fi
-    else
-        MODE="stretch"
-    fi
+    hyprctl hyprpaper unload "$WALLPAPER"
     hyprctl hyprpaper preload "$WALLPAPER"
     hyprctl hyprpaper wallpaper "eDP-1,$WALLPAPER"
-
 }
 
 nitrogen_cmd() {
