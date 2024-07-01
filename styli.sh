@@ -315,6 +315,12 @@ sway_cmd() {
 
 }
 
+hyprpaper_cmd() {
+    hyprctl hyprpaper unload "$WALLPAPER"
+    hyprctl hyprpaper preload "$WALLPAPER"
+    hyprctl hyprpaper wallpaper "eDP-1,$WALLPAPER"
+}
+
 nitrogen_cmd() {
     for ((MONITOR = 0; monitor < "$MONITORS"; monitor++)); do
         local NITROGEN_ARR=(nitrogen --save --head="$MONITOR")
@@ -415,6 +421,7 @@ XFCE=false
 GNOME=false
 NITROGEN=false
 SWAY=false
+HYPRPAPER=false
 MONITORS=1
 # SC2034
 PARSED_ARGUMENTS=$(getopt -a -n "$0" -o h:w:s:l:b:r:a:c:d:m:pLknxgy:sa --long search:,height:,width:,fehbg:,fehopt:,artist:,subreddit:,directory:,monitors:,termcolor:,lighwal:,kde,nitrogen,xfce,gnome,sway,save -- "$@")
@@ -498,6 +505,10 @@ while :; do
         SWAY=true
         shift
         ;;
+    -hp | --hyprpaper)
+      HYPRPAPER=true
+      shift
+      ;;
     -- | '')
         shift
         break
@@ -533,6 +544,8 @@ elif [ "$NITROGEN" = true ]; then
     nitrogen_cmd
 elif [ "$SWAY" = true ]; then
     sway_cmd
+elif [ "$HYPRPAPER" = true ]; then
+    hyprpaper_cmd
 else
     feh_cmd >/dev/null 2>&1
 fi
