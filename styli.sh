@@ -322,8 +322,8 @@ hyprpaper_cmd() {
 }
 
 nitrogen_cmd() {
-    for ((MONITOR = 0; monitor < "$MONITORS"; monitor++)); do
-        local NITROGEN_ARR=(nitrogen --save --head="$MONITOR")
+    for ((monitor = 0; monitor < "$MONITORS"; monitor++)); do
+        local NITROGEN_ARR=(nitrogen --save --head="$monitor")
 
         if [ -n "$BGTYPE" ]; then
             if [ "$BGTYPE" == 'bg-center' ]; then
