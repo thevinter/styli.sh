@@ -7,6 +7,7 @@
 
 
 LINK="https://source.unsplash.com/random/"
+PICSUM_LINK="https://picsum.photos/"
 
 if [ -z ${XDG_CONFIG_HOME+x} ]; then
     XDG_CONFIG_HOME="$HOME/.config"
@@ -183,6 +184,20 @@ reddit() {
     wget -T $TIMEOUT -U "$USERAGENT" --no-check-certificate -q -P down -O "$WALLPAPER" "$TARGET_URL" &>/dev/null
 }
 
+picsum() {
+    if [ -n "$HEIGHT" ] || [ -n "$WIDTH" ]; then
+        LINK="${PICSUM_LINK}${WIDTH}/${HEIGHT}" # dont remove {} from variables
+    else
+        LINK="${PICSUM_LINK}/1920/1080"
+    fi
+
+    if [ -n "$SEARCH" ]; then
+        LINK="${PICSUM_LINK}/?${SEARCH}"
+    fi
+
+    wget -q -O "$WALLPAPER" "$LINK"
+}
+
 unsplash() {
     local SEARCH="${SEARCH// /+}"
     if [ -n "$HEIGHT" ] || [ -n "$WIDTH" ]; then
@@ -321,6 +336,10 @@ hyprpaper_cmd() {
     hyprctl hyprpaper wallpaper "eDP-1,$WALLPAPER"
 }
 
+swww_cmd() {
+    swww img -o eDP-1 "$WALLPAPER"
+}
+
 nitrogen_cmd() {
     for ((monitor = 0; monitor < "$MONITORS"; monitor++)); do
         local NITROGEN_ARR=(nitrogen --save --head="$monitor")
@@ -422,6 +441,7 @@ GNOME=false
 NITROGEN=false
 SWAY=false
 HYPRPAPER=false
+SWWW=false
 MONITORS=1
 # SC2034
 PARSED_ARGUMENTS=$(getopt -a -n "$0" -o h:w:s:l:b:r:a:c:d:m:pLknxgy:sa --long search:,height:,width:,fehbg:,fehopt:,artist:,subreddit:,directory:,monitors:,termcolor:,lighwal:,kde,nitrogen,xfce,gnome,sway,save -- "$@")
@@ -505,6 +525,10 @@ while :; do
         SWAY=true
         shift
         ;;
+    -sw | --swww)
+        SWWW=true
+	shift
+	;;
     -hp | --hyprpaper)
       HYPRPAPER=true
       shift
@@ -529,7 +553,8 @@ elif [ "$LINK" = "deviantart" ] || [ -n "$ARTIST" ]; then
 elif [ -n "$SAVE" ]; then
     save_cmd
 else
-    unsplash
+    echo $WALLPAPER
+    picsum
 fi
 
 type_check
@@ -546,6 +571,8 @@ elif [ "$SWAY" = true ]; then
     sway_cmd
 elif [ "$HYPRPAPER" = true ]; then
     hyprpaper_cmd
+elif [ "$SWWW" = true ]; then
+    swww_cmd
 else
     feh_cmd >/dev/null 2>&1
 fi
