@@ -7,6 +7,7 @@
 
 
 LINK="https://source.unsplash.com/random/"
+PICSUM_LINK="https://picsum.photos/"
 
 if [ -z ${XDG_CONFIG_HOME+x} ]; then
     XDG_CONFIG_HOME="$HOME/.config"
@@ -27,6 +28,34 @@ WALLPAPER="$CACHEDIR/wallpaper.jpg"
 
 save_cmd() {
     cp "$WALLPAPER" "$HOME/Pictures/wallpaper$RANDOM.jpg"
+}
+
+get_monitor_resolution() {
+    # Try different methods to get monitor resolution
+    if command -v xrandr >/dev/null 2>&1; then
+        # X11 method
+        RESOLUTION=$(xrandr --current | grep -E '\*' | head -1 | awk '{print $1}')
+    elif command -v wlr-randr >/dev/null 2>&1; then
+        # Wayland method with wlr-randr
+        RESOLUTION=$(wlr-randr | grep -A1 "current" | tail -1 | awk '{print $1}')
+    elif [ -n "$WAYLAND_DISPLAY" ] && command -v swaymsg >/dev/null 2>&1; then
+        # Sway/Wayland method
+        RESOLUTION=$(swaymsg -t get_outputs | jq -r '.[] | select(.focused) | "\(.current_mode.width)x\(.current_mode.height)"')
+    elif ls /sys/class/drm/card*/modes >/dev/null 2>&1; then
+        # Fallback: try to read from DRM
+        RESOLUTION=$(head -1 /sys/class/drm/card*/modes 2>/dev/null | head -1)
+    else
+        # Default fallback
+        RESOLUTION="1920x1080"
+    fi
+    
+    if [ -n "$RESOLUTION" ] && [[ "$RESOLUTION" =~ ^[0-9]+x[0-9]+$ ]]; then
+        WIDTH=${RESOLUTION%x*}
+        HEIGHT=${RESOLUTION#*x}
+    else
+        WIDTH=1920
+        HEIGHT=1080
+    fi
 }
 
 die() {
@@ -183,12 +212,25 @@ reddit() {
     wget -T $TIMEOUT -U "$USERAGENT" --no-check-certificate -q -P down -O "$WALLPAPER" "$TARGET_URL" &>/dev/null
 }
 
+picsum() {
+    
+    if [ -n "$HEIGHT" ] || [ -n "$WIDTH" ]; then
+        LINK="${PICSUM_LINK}${WIDTH}/${HEIGHT}" # dont remove {} from variables
+    else
+        get_monitor_resolution
+        LINK="${PICSUM_LINK}${WIDTH}/${HEIGHT}"
+    fi
+
+    wget -q -O "$WALLPAPER" "$LINK"
+}
+
 unsplash() {
     local SEARCH="${SEARCH// /+}"
     if [ -n "$HEIGHT" ] || [ -n "$WIDTH" ]; then
         LINK="${LINK}${WIDTH}x${HEIGHT}" # dont remove {} from variables
     else
-        LINK="${LINK}1920x1080"
+        get_monitor_resolution
+        LINK="${LINK}${WIDTH}x${HEIGHT}"
     fi
 
     if [ -n "$SEARCH" ]; then
@@ -321,6 +363,10 @@ hyprpaper_cmd() {
     hyprctl hyprpaper wallpaper "eDP-1,$WALLPAPER"
 }
 
+swww_cmd() {
+    swww img -o eDP-1 "$WALLPAPER"
+}
+
 nitrogen_cmd() {
     for ((monitor = 0; monitor < "$MONITORS"; monitor++)); do
         local NITROGEN_ARR=(nitrogen --save --head="$monitor")
@@ -422,6 +468,7 @@ GNOME=false
 NITROGEN=false
 SWAY=false
 HYPRPAPER=false
+SWWW=false
 MONITORS=1
 # SC2034
 PARSED_ARGUMENTS=$(getopt -a -n "$0" -o h:w:s:l:b:r:a:c:d:m:pLknxgy:sa --long search:,height:,width:,fehbg:,fehopt:,artist:,subreddit:,directory:,monitors:,termcolor:,lighwal:,kde,nitrogen,xfce,gnome,sway,save -- "$@")
@@ -429,7 +476,6 @@ PARSED_ARGUMENTS=$(getopt -a -n "$0" -o h:w:s:l:b:r:a:c:d:m:pLknxgy:sa --long se
 VALID_ARGUMENTS=$?
 if [ "$VALID_ARGUMENTS" != "0" ]; then
     usage
-    exit
 fi
 while :; do
     case "${1}" in
@@ -505,6 +551,10 @@ while :; do
         SWAY=true
         shift
         ;;
+    -sw | --swww)
+        SWWW=true
+	shift
+	;;
     -hp | --hyprpaper)
       HYPRPAPER=true
       shift
@@ -529,7 +579,7 @@ elif [ "$LINK" = "deviantart" ] || [ -n "$ARTIST" ]; then
 elif [ -n "$SAVE" ]; then
     save_cmd
 else
-    unsplash
+    picsum
 fi
 
 type_check
@@ -546,6 +596,8 @@ elif [ "$SWAY" = true ]; then
     sway_cmd
 elif [ "$HYPRPAPER" = true ]; then
     hyprpaper_cmd
+elif [ "$SWWW" = true ]; then
+    swww_cmd
 else
     feh_cmd >/dev/null 2>&1
 fi
