@@ -30,6 +30,34 @@ save_cmd() {
     cp "$WALLPAPER" "$HOME/Pictures/wallpaper$RANDOM.jpg"
 }
 
+get_monitor_resolution() {
+    # Try different methods to get monitor resolution
+    if command -v xrandr >/dev/null 2>&1; then
+        # X11 method
+        RESOLUTION=$(xrandr --current | grep -E '\*' | head -1 | awk '{print $1}')
+    elif command -v wlr-randr >/dev/null 2>&1; then
+        # Wayland method with wlr-randr
+        RESOLUTION=$(wlr-randr | grep -A1 "current" | tail -1 | awk '{print $1}')
+    elif [ -n "$WAYLAND_DISPLAY" ] && command -v swaymsg >/dev/null 2>&1; then
+        # Sway/Wayland method
+        RESOLUTION=$(swaymsg -t get_outputs | jq -r '.[] | select(.focused) | "\(.current_mode.width)x\(.current_mode.height)"')
+    elif ls /sys/class/drm/card*/modes >/dev/null 2>&1; then
+        # Fallback: try to read from DRM
+        RESOLUTION=$(head -1 /sys/class/drm/card*/modes 2>/dev/null | head -1)
+    else
+        # Default fallback
+        RESOLUTION="1920x1080"
+    fi
+    
+    if [ -n "$RESOLUTION" ] && [[ "$RESOLUTION" =~ ^[0-9]+x[0-9]+$ ]]; then
+        WIDTH=${RESOLUTION%x*}
+        HEIGHT=${RESOLUTION#*x}
+    else
+        WIDTH=1920
+        HEIGHT=1080
+    fi
+}
+
 die() {
     printf "ERR: %s\n" "$1" >&2
     exit 1
@@ -185,14 +213,12 @@ reddit() {
 }
 
 picsum() {
+    
     if [ -n "$HEIGHT" ] || [ -n "$WIDTH" ]; then
         LINK="${PICSUM_LINK}${WIDTH}/${HEIGHT}" # dont remove {} from variables
     else
-        LINK="${PICSUM_LINK}/1920/1080"
-    fi
-
-    if [ -n "$SEARCH" ]; then
-        LINK="${PICSUM_LINK}/?${SEARCH}"
+        get_monitor_resolution
+        LINK="${PICSUM_LINK}${WIDTH}/${HEIGHT}"
     fi
 
     wget -q -O "$WALLPAPER" "$LINK"
@@ -203,7 +229,8 @@ unsplash() {
     if [ -n "$HEIGHT" ] || [ -n "$WIDTH" ]; then
         LINK="${LINK}${WIDTH}x${HEIGHT}" # dont remove {} from variables
     else
-        LINK="${LINK}1920x1080"
+        get_monitor_resolution
+        LINK="${LINK}${WIDTH}x${HEIGHT}"
     fi
 
     if [ -n "$SEARCH" ]; then
@@ -449,7 +476,6 @@ PARSED_ARGUMENTS=$(getopt -a -n "$0" -o h:w:s:l:b:r:a:c:d:m:pLknxgy:sa --long se
 VALID_ARGUMENTS=$?
 if [ "$VALID_ARGUMENTS" != "0" ]; then
     usage
-    exit
 fi
 while :; do
     case "${1}" in
@@ -553,7 +579,6 @@ elif [ "$LINK" = "deviantart" ] || [ -n "$ARTIST" ]; then
 elif [ -n "$SAVE" ]; then
     save_cmd
 else
-    echo $WALLPAPER
     picsum
 fi
 

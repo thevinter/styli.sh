@@ -5,13 +5,28 @@
 set -e
 
 SCRIPT_NAME="styli.sh"
-INSTALL_DIR="/usr/local/bin"
 SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)/$SCRIPT_NAME"
 
-# Check if running as root
-if [[ $EUID -ne 0 ]]; then
-    echo "Please run as root (e.g., with sudo)."
-    exit 1
+# Determine install directory
+if [[ $EUID -eq 0 ]]; then
+    # Running as root - install system-wide
+    INSTALL_DIR="/usr/local/bin"
+else
+    # Running as user - install to user's local bin
+    INSTALL_DIR="$HOME/.local/bin"
+    
+    # Create the directory if it doesn't exist
+    if [[ ! -d "$INSTALL_DIR" ]]; then
+        mkdir -p "$INSTALL_DIR"
+        echo "Created directory: $INSTALL_DIR"
+    fi
+    
+    # Check if ~/.local/bin is in PATH
+    if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+        echo "Warning: $HOME/.local/bin is not in your PATH."
+        echo "Add this line to your ~/.bashrc or ~/.zshrc:"
+        echo "export PATH=\"\$HOME/.local/bin:\$PATH\""
+    fi
 fi
 
 # Check if styli.sh exists
@@ -23,7 +38,7 @@ fi
 # Make script executable
 chmod +x "$SCRIPT_PATH"
 
-# Copy to /usr/local/bin
+# Copy to install directory
 cp "$SCRIPT_PATH" "$INSTALL_DIR/"
 
 echo "$SCRIPT_NAME installed to $INSTALL_DIR."
